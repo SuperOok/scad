@@ -1,0 +1,91 @@
+= Lenkerhalterung mit abschliessbarem Koerbchen-Gegenstueck
+:toc:
+:toc-title: Inhalt
+:icons: font
+
+== Was ist das?
+
+Eine zweiteilige Fahrradlenker-Halterung fuer ein vorhandenes Bastkoerbchen:
+
+* Die *Halterung* wird mit einer Schelle fest an den Lenker geschraubt und
+  bleibt am Rad. Vorne traegt sie eine Schwalbenschwanz-Nut.
+* Das *Gegenstueck* (zwei Platten) klemmt eine Koerbchenwand zwischen sich und
+  haengt sich mit einem Schwalbenschwanz-Zapfen von oben in die Halterung ein.
+  Das Koerbchengewicht zieht den Zapfen nach unten in den Sitz – waehrend der
+  Fahrt faellt nichts ab.
+* Ein kleines *Vorhaengeschloss* durch die seitlich fluchtenden Oesen blockiert
+  das Herausziehen nach oben → Diebstahlschutz.
+
+== Auf einen Blick
+
+[cols="1,3", frame=none, grid=rows]
+|===
+| Lenkerdurchmesser | 25,4 mm (Parameter `handlebar_diameter`)
+| Verbindung        | vertikaler Schwalbenschwanz (von oben eingeschoben)
+| Sicherung         | kleines Vorhaengeschloss, Buegel ~2 mm
+| Koerbchen         | mit zwei Platten + M4-Schrauben/-Muttern geklemmt
+| Druck             | einfarbig, FDM
+|===
+
+== Druckteile
+
+Vier Teile, alle aus `lenkerhalterung.scad`:
+
+[cols="2,3", options="header"]
+|===
+| Teil (`part=`) | Beschreibung
+
+| `halterung`    | Schellen-Oberteil mit Lenkermulde, Schwalbenschwanz-Nut und
+                   hinterer Schloss-Oese.
+| `clamp_strap`  | unteres Schellenteil; klemmt den Lenker von unten (4× M4).
+| `mount_plate`  | innere Platte des Gegenstuecks mit Schwalbenschwanz-Zapfen,
+                   vorderer Schloss-Oese und M4-Mutterntaschen.
+| `back_plate`   | aeussere Platte; klemmt mit `mount_plate` die Koerbchenwand.
+|===
+
+== Benoetigte Hardware
+
+* 4× *M4*-Schraube + Mutter für die Lenkerschelle (an den Ecken, neben dem
+  Lenker; Schraube von unten, Mutter in der Tasche oben im `halterung`-Teil)
+* 2× *M4*-Schraube + Mutter für das Plattensandwich (Mutter versenkt in der
+  `mount_plate`); Laenge je nach Koerbchenwand-Dicke
+* 1× kleines *Vorhaengeschloss* mit duennem Buegel (~2 mm)
+
+== Export
+
+Aus diesem Ordner:
+
+[source,bash]
+----
+./export-lenkerhalterung.sh
+----
+
+Erzeugt je Teil eine `.3mf`
+(`lenkerhalterung-halterung.3mf`, `…-clamp-strap.3mf`, `…-mount-plate.3mf`,
+`…-back-plate.3mf`). Das Skript ruft den gemeinsamen Packer `../export.sh` mit
+`-D part="…"` auf.
+
+NOTE: OpenSCAD meldet Importfehler nicht immer als Exit-Code. Nach dem Export
+auf `ERROR`/`WARNING` und plausible Dateigroessen achten (siehe `AGENTS.md`).
+
+== Druckhinweise (Orientierung)
+
+* `halterung`: mit der Lenkermulde nach oben drucken; die runde Lenkerbohrung
+  ueberbrueckt sauber. Die Schwalbenschwanz-Nut verlaeuft dann in Druckrichtung
+  (Z) ohne Ueberhang.
+* `clamp_strap`: flach mit der Mulde nach oben.
+* `mount_plate` / `back_plate`: flach auf die Plattenrueckseite legen; der
+  Zapfen zeigt nach oben. Ggf. leichte Stuetzen unter den Schloss-Oesen.
+
+== Anpassen
+
+Alle Masse stehen als Parameter oben in `lenkerhalterung.scad`
+(Lenkerdurchmesser, Schwalbenschwanz, Plattenmasse, Schloss-Oese …). Die
+Vorschau (`part="assembly"`) zeigt alles zusammengebaut; mit `explode=45`
+gibt es eine Explosionsdarstellung.
+
+[source,bash]
+----
+# Vorschau-PNG
+openscad -D explode=45 -o preview.png lenkerhalterung.scad
+----
