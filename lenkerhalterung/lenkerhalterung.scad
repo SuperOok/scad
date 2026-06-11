@@ -21,8 +21,15 @@
 // =============================================================================
 
 // ---- Lenker -----------------------------------------------------------------
-handlebar_diameter = 25.4;          // Lenker-Durchmesser an der Klemmstelle
+handlebar_diameter = 32;            // Lenker-Durchmesser an der Klemmstelle
 handlebar_clearance = 0.2;          // Spiel in der Schelle
+// Mittige Verdickung (Stem-Schelle), die ausgespart werden muss. Die Halterung
+// ueberbrueckt sie und klemmt auf den geraden Zonen links/rechts.
+bulge_width = 40;                   // Breite der Verdickung (entlang Lenker, X)
+bulge_thickness = 5;                // radialer Ueberstand der Verdickung
+bulge_clearance = 1;                // Luft um die Verdickung (radial)
+bulge_clearance_x = 1;              // Luft seitlich der Verdickung (X)
+mount_zone_width = 15;              // klemmbare, gerade Lenkerlaenge je Seite
 
 // ---- Schelle (Klemme) -------------------------------------------------------
 clamp_wall = 5;                     // Wandstaerke um den Lenker
@@ -31,11 +38,11 @@ clamp_screw_clear = 4.6;            // Durchgangsloch M4
 clamp_nut_af = 7;                   // M4 Mutter Schluesselweite (SW7)
 clamp_nut_thickness = 3.4;          // M4 Mutter Hoehe + etwas Spiel
 clamp_screw_head = 7.6;             // M4 Zylinderkopf-Durchmesser (Senkung)
-// 4 Klemmschrauben an den Ecken, bewusst NEBEN dem Lenker. Der Y-Versatz haelt
-// die senkrechten Schrauben am massiven Lenker vorbei, der X-Versatz frei vom
-// Schwalbenschwanz-Block.
-clamp_screw_x = 18;                 // X-Versatz (> Nut-Block-Halbbreite)
-clamp_screw_y = 15.5;               // Y-Versatz (> bar_r + Bohrungsradius!)
+// 4 Klemmschrauben (2 je Seite) mittig in den Klemmzonen, NEBEN dem Lenker und
+// jenseits der mittigen Verdickung. Y-Versatz haelt die senkrechten Schrauben
+// am Lenker vorbei; X-Versatz setzt sie in die Zonenmitte.
+clamp_screw_x = bulge_width / 2 + mount_zone_width / 2;  // Mitte der Klemmzone
+clamp_screw_y = 19.5;               // Y-Versatz (> bar_r + Bohrungsradius!)
 clamp_split_gap = 0.6;              // Spalt Body/Strap fuer Klemmkraft
 
 // ---- Schwalbenschwanz (Einschub) -------------------------------------------
@@ -79,11 +86,16 @@ bar_hole_r = bar_r + handlebar_clearance;
 clamp_top = bar_r + clamp_wall;                 // Oberkante Schellen-Body (+Z)
 clamp_bottom = bar_r + clamp_wall;              // Unterkante Schellen-Strap (-Z)
 nut_hex_r = clamp_nut_af / cos(30) / 2;         // Aussenradius der Mutterntasche
+// Freiraum um die mittige Verdickung (radial bzw. entlang Lenker):
+bulge_clear_r = bar_r + bulge_thickness + bulge_clearance;
+bulge_half_clr = bulge_width / 2 + bulge_clearance_x;
 clamp_half_w = clamp_screw_x + nut_hex_r + 2;   // halbe Schellenbreite (X)
-clamp_half_d = clamp_screw_y + nut_hex_r + 2;   // halbe Schellentiefe (Y)
+// Tiefe: Platz fuer die Muttern UND Rand-Stege, die die beiden Klemmseiten
+// ueber die Mittenaussparung hinweg verbinden.
+clamp_half_d = max(clamp_screw_y + nut_hex_r + 2, bulge_clear_r + 4);
 
 front_y = clamp_half_d;                         // Vorderflaeche (Nut-Oeffnung)
-z_stop = clamp_top + dovetail_floor;            // Sitzanschlag (Zapfen-Unterkante)
+z_stop = max(clamp_top, bulge_clear_r) + dovetail_floor;  // Sitz ueber Verdickung
 groove_top = z_stop + dovetail_height;          // Oberkante Nut/Block
 groove_block_y0 = front_y - (dovetail_depth + groove_back_wall);
 groove_block_z0 = clamp_top - 2;                // kleiner Ueberlapp zur Schelle
@@ -143,12 +155,25 @@ module clamp_screw_holes() {
         }
 }
 
+// Mittige Aussparung fuer die Verdickung (Zylinder um die Lenkerachse).
+module bulge_recess() {
+    rotate([0, 90, 0])
+        translate([0, 0, -bulge_half_clr])
+            cylinder(r = bulge_clear_r, h = 2 * bulge_half_clr);
+}
+
 module halterung() {
     difference() {
         union() {
-            // Schellen-Body ueber dem Lenker
+            // Klemm-Body ueber dem Lenker; die Mitte wird unten ausgespart,
+            // sodass zwei Klemmbloecke (links/rechts) stehen bleiben.
             translate([-clamp_half_w, -clamp_half_d, 0])
                 cube([2 * clamp_half_w, 2 * clamp_half_d, clamp_top]);
+            // Bruecke vorne-oben: verbindet die beiden Klemmseiten ueber die
+            // Verdickung hinweg und traegt den Schwalbenschwanz-Block.
+            translate([-clamp_half_w, groove_block_y0, clamp_top - 3])
+                cube([2 * clamp_half_w, front_y - groove_block_y0,
+                      z_stop - (clamp_top - 3)]);
             // Schwalbenschwanz-Block vorne oben
             translate([-groove_half_w, groove_block_y0, groove_block_z0])
                 cube([2 * groove_half_w, front_y - groove_block_y0, groove_top - groove_block_z0]);
@@ -159,6 +184,8 @@ module halterung() {
         rotate([0, 90, 0])
             translate([0, 0, -clamp_half_w - eps])
                 cylinder(r = bar_hole_r, h = 2 * clamp_half_w + 2 * eps);
+        // Mittige Verdickung aussparen
+        bulge_recess();
         // Schwalbenschwanz-Nut (oben offen)
         translate([0, front_y, z_stop])
             dovetail_prism(dovetail_width_top, dovetail_width_base, dovetail_depth,
@@ -177,6 +204,8 @@ module clamp_strap() {
         rotate([0, 90, 0])
             translate([0, 0, -clamp_half_w - eps])
                 cylinder(r = bar_hole_r, h = 2 * clamp_half_w + 2 * eps);
+        // Mittige Verdickung aussparen
+        bulge_recess();
         // Schraubenloecher + Kopfsenkung unten
         for (sx = [-1, 1], sy = [-1, 1])
             translate([sx * clamp_screw_x, sy * clamp_screw_y, 0]) {
@@ -267,10 +296,15 @@ module back_plate() {
 // =============================================================================
 
 module ghost_handlebar() {
-    color([0.6, 0.6, 0.6, 0.35])
+    color([0.6, 0.6, 0.6, 0.35]) {
         rotate([0, 90, 0])
             translate([0, 0, -clamp_half_w - 15])
                 cylinder(r = bar_r, h = 2 * clamp_half_w + 30);
+        // mittige Verdickung
+        rotate([0, 90, 0])
+            translate([0, 0, -bulge_width / 2])
+                cylinder(r = bar_r + bulge_thickness, h = bulge_width);
+    }
 }
 
 module assembly() {

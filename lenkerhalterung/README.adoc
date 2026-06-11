@@ -20,12 +20,19 @@ Eine zweiteilige Fahrradlenker-Halterung fuer ein vorhandenes Bastkoerbchen:
 
 [cols="1,3", frame=none, grid=rows]
 |===
-| Lenkerdurchmesser | 25,4 mm (Parameter `handlebar_diameter`)
+| Lenkerdurchmesser | 32 mm (Parameter `handlebar_diameter`)
+| Klemmung          | ueberbrueckt die mittige Verdickung, klemmt auf den
+                      geraden Zonen links/rechts (je ~15 mm), 4× M4
 | Verbindung        | vertikaler Schwalbenschwanz (von oben eingeschoben)
 | Sicherung         | kleines Vorhaengeschloss, Buegel ~2 mm
 | Koerbchen         | mit zwei Platten + M4-Schrauben/-Muttern geklemmt
 | Druck             | einfarbig, FDM
 |===
+
+Die Lenkermitte hat eine Verdickung (Stem-Schelle), die ausgespart wird; die
+Halterung greift beidseitig auf den geraden 15-mm-Zonen. Masse der Verdickung
+und Klemmzonen sind oben in der `.scad` parametrisch
+(`bulge_width`, `bulge_thickness`, `mount_zone_width`).
 
 == Druckteile
 
@@ -35,8 +42,8 @@ Vier Teile, alle aus `lenkerhalterung.scad`:
 |===
 | Teil (`part=`) | Beschreibung
 
-| `halterung`    | Schellen-Oberteil mit Lenkermulde, Schwalbenschwanz-Nut und
-                   hinterer Schloss-Oese.
+| `halterung`    | Schellen-Oberteil: zwei Klemmbloecke + Bruecke ueber die
+                   mittige Verdickung, Schwalbenschwanz-Nut, hintere Schloss-Oese.
 | `clamp_strap`  | unteres Schellenteil; klemmt den Lenker von unten (4× M4).
 | `mount_plate`  | innere Platte des Gegenstuecks mit Schwalbenschwanz-Zapfen,
                    vorderer Schloss-Oese und M4-Mutterntaschen.
