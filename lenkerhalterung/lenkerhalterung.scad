@@ -39,7 +39,7 @@ clamp_screw_y = 15.5;               // Y-Versatz (> bar_r + Bohrungsradius!)
 clamp_split_gap = 0.6;              // Spalt Body/Strap fuer Klemmkraft
 
 // ---- Schwalbenschwanz (Einschub) -------------------------------------------
-dovetail_height = 30;               // Einschubtiefe in Z (Eingriffslaenge)
+dovetail_height = 25;               // Einschubtiefe in Z (Eingriffslaenge)
 dovetail_depth = 8;                 // Tiefe in Y
 dovetail_width_base = 22;           // Breite hinten (breit, zum Lenker)
 dovetail_width_top = 14;            // Breite vorne (schmal) -> Hinterschnitt
@@ -51,8 +51,8 @@ groove_back_wall = 4;               // Wand hinter der Nut (zum Lenker)
 // ---- Platten / Sandwich -----------------------------------------------------
 plate_width = 30;                   // Breite (X)
 plate_thickness = 6;                // Dicke (Y) je Platte
-plate_ext_bottom = 12;              // Plattenueberstand unter dem Zapfen
-plate_ext_top = 8;                  // Plattenueberstand ueber dem Zapfen
+plate_ext_bottom = 9;               // Plattenueberstand unter dem Zapfen
+plate_ext_top = 6;                  // Plattenueberstand ueber dem Zapfen
 plate_screw_diameter = 4;           // M4
 plate_screw_clear = 4.6;            // Durchgangsloch M4
 plate_nut_af = 7;                   // M4 Mutter SW7
@@ -93,8 +93,8 @@ plate_back_y = front_y;                         // Plattenrueckseite an Vorderfl
 plate_front_y = plate_back_y + plate_thickness;
 plate_z0 = z_stop - plate_ext_bottom;
 plate_z1 = groove_top + plate_ext_top;
-plate_screw_z_lo = z_stop - plate_ext_bottom / 2 - 1;   // unter dem Zapfen
-plate_screw_z_hi = groove_top + plate_ext_top / 2 + 1;  // ueber dem Zapfen
+plate_screw_z_lo = z_stop - plate_ext_bottom / 2;       // unter dem Zapfen
+plate_screw_z_hi = groove_top + plate_ext_top / 2;      // ueber dem Zapfen
 
 ear_x = plate_width / 2 + ear_gap + ear_width / 2;      // Oesen-X (ausserhalb Platte)
 lock_z = (z_stop + groove_top) / 2;                     // Schlosshoehe (Buegel)
