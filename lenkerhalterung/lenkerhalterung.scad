@@ -16,6 +16,10 @@
 //   Y = vor/zurueck (+Y = Fahrtrichtung, Koerbchen vorne)
 //   Z = oben; Schwalbenschwanz gleitet in -Z ein, loesen = +Z.
 //
+// Unter der mittigen Verdickung zeigt eine Lenkstange (~37 mm) nach UNTEN. Das
+// untere Schellenteil (clamp_strap) hat deshalb einen nach unten und nach hinten
+// (-Y) offenen Kanal (C-Form) und wird seitlich am Rohr vorbeigeschoben.
+//
 // Alle Teile sind im "seated"/Welt-Frame modelliert. Fuer den Druck einzelne
 // Teile im Slicer passend drehen (siehe README).
 // =============================================================================
@@ -30,6 +34,15 @@ bulge_thickness = 5;                // radialer Ueberstand der Verdickung
 bulge_clearance = 1;                // Luft um die Verdickung (radial)
 bulge_clearance_x = 1;              // Luft seitlich der Verdickung (X)
 mount_zone_width = 15;              // klemmbare, gerade Lenkerlaenge je Seite
+
+// ---- Lenkstange (Vorbau-/Gabelschaftrohr unter der Verdickung) --------------
+// Direkt unter der mittigen Verdickung zeigt ein Rohr nach UNTEN (zur Gabel).
+// Das untere Schellenteil muss daran vorbeigeschoben werden koennen, ist also
+// nach unten UND zu einer Seite hin offen (C-Form, kein geschlossener Ring).
+stem_diameter = 37;                 // Rohr-Durchmesser unter der Verdickung
+stem_clearance = 1.5;              // radiale Luft um das Rohr (Schiebespiel)
+stem_tilt = 2;                      // Neigung nach hinten (Grad); Rohr unten -> -Y
+stem_open = "back";                 // offene Schellenseite: "back" (-Y) | "front" (+Y)
 
 // ---- Schelle (Klemme) -------------------------------------------------------
 clamp_wall = 5;                     // Wandstaerke um den Lenker
@@ -89,6 +102,7 @@ nut_hex_r = clamp_nut_af / cos(30) / 2;         // Aussenradius der Mutterntasch
 // Freiraum um die mittige Verdickung (radial bzw. entlang Lenker):
 bulge_clear_r = bar_r + bulge_thickness + bulge_clearance;
 bulge_half_clr = bulge_width / 2 + bulge_clearance_x;
+stem_cut_r = stem_diameter / 2 + stem_clearance;    // Aussparungsradius f. Rohr
 clamp_half_w = clamp_screw_x + nut_hex_r + 2;   // halbe Schellenbreite (X)
 // Tiefe: Platz fuer die Muttern UND Rand-Stege, die die beiden Klemmseiten
 // ueber die Mittenaussparung hinweg verbinden.
@@ -173,6 +187,24 @@ module bulge_recess() {
             cylinder(r = bulge_clear_r, h = 2 * bulge_half_clr);
 }
 
+// Vertikaler Kanal fuer die nach unten zeigende Lenkstange. Nach unten UND zu
+// einer Seite (stem_open) offen -> das untere Schellenteil wird seitlich am
+// Rohr vorbeigeschoben (C-Form). Achse 2 Grad nach hinten geneigt (Rohr unten
+// Richtung -Y), daher rotate([-stem_tilt, ...]).
+module stem_recess() {
+    h = 4 * clamp_bottom;                   // deckt die ganze Straphoehe reichlich ab
+    slot_len = 2 * clamp_half_d;            // Schlitz sicher ueber den Rand hinaus
+    slot_y0 = (stem_open == "front") ? 0 : -slot_len;
+    rotate([-stem_tilt, 0, 0]) {
+        // Rohr selbst (vertikaler Zylinder, bildet die runde Schlitz-Innenseite)
+        translate([0, 0, -h / 2])
+            cylinder(r = stem_cut_r, h = h);
+        // Schlitz zur offenen Seite hin
+        translate([-stem_cut_r, slot_y0, -h / 2])
+            cube([2 * stem_cut_r, slot_len, h]);
+    }
+}
+
 module halterung() {
     difference() {
         union() {
@@ -206,7 +238,11 @@ module halterung() {
     }
 }
 
-// Unteres Schellenteil (separat), kappt den Lenker von unten.
+// Unteres Schellenteil (separat), kappt den Lenker von unten. Die nach unten
+// zeigende Lenkstange erzwingt einen nach unten und nach hinten (stem_open)
+// offenen Kanal: das Teil ist daher eine C-Form aus zwei Klemmbloecken, die nur
+// noch ueber den Steg auf der geschlossenen Seite verbunden sind. Jeder Block
+// wird ohnehin separat mit 2 Schrauben gegen die Halterung gezogen.
 module clamp_strap() {
     difference() {
         translate([-clamp_half_w, -clamp_half_d, -clamp_bottom])
@@ -217,6 +253,8 @@ module clamp_strap() {
                 cylinder(r = bar_hole_r, h = 2 * clamp_half_w + 2 * eps);
         // Mittige Verdickung aussparen
         bulge_recess();
+        // Kanal fuer die nach unten zeigende Lenkstange (unten + hinten offen)
+        stem_recess();
         // Schraubenloecher + Kopfsenkung unten
         for (sx = [-1, 1], sy = [-1, 1])
             translate([sx * clamp_screw_x, sy * clamp_screw_y, 0]) {
@@ -315,6 +353,10 @@ module ghost_handlebar() {
         rotate([0, 90, 0])
             translate([0, 0, -bulge_width / 2])
                 cylinder(r = bar_r + bulge_thickness, h = bulge_width);
+        // Lenkstange: Rohr nach unten (2 Grad nach hinten geneigt)
+        rotate([-stem_tilt, 0, 0])
+            translate([0, 0, -70])
+                cylinder(r = stem_diameter / 2, h = 70);
     }
 }
 

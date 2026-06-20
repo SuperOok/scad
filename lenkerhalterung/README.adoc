@@ -21,6 +21,9 @@ Eine zweiteilige Fahrradlenker-Halterung fuer ein vorhandenes Bastkoerbchen:
 [cols="1,3", frame=none, grid=rows]
 |===
 | Lenkerdurchmesser | 32 mm (Parameter `handlebar_diameter`)
+| Lenkstange        | ~37 mm Rohr nach unten unter der Verdickung
+                      (`stem_diameter`); das untere Schellenteil ist nach unten
+                      und hinten offen und wird daran vorbeigeschoben
 | Klemmung          | ueberbrueckt die mittige Verdickung, klemmt auf den
                       geraden Zonen links/rechts (je ~15 mm), 4× M4
 | Verbindung        | vertikaler Schwalbenschwanz (von oben eingeschoben)
@@ -44,7 +47,9 @@ Vier Teile, alle aus `lenkerhalterung.scad`:
 
 | `halterung`    | Schellen-Oberteil: zwei Klemmbloecke + Bruecke ueber die
                    mittige Verdickung, Schwalbenschwanz-Nut, hintere Schloss-Oese.
-| `clamp_strap`  | unteres Schellenteil; klemmt den Lenker von unten (4× M4).
+| `clamp_strap`  | unteres Schellenteil (C-Form), klemmt den Lenker von unten
+                   (4× M4). Nach unten und hinten offener Kanal, damit es an der
+                   nach unten zeigenden Lenkstange vorbeigeschoben werden kann.
 | `mount_plate`  | innere Platte des Gegenstuecks mit Schwalbenschwanz-Zapfen,
                    vorderer Schloss-Oese und M4-Mutterntaschen.
 | `back_plate`   | aeussere Platte; klemmt mit `mount_plate` die Koerbchenwand.
@@ -87,7 +92,9 @@ und die Schwalbenschwanz-Flanken als saubere senkrechte Waende (Schiebesitz).
   ueberbruecken (minimaler Droop am Scheitel, fuer die Klemmung unkritisch) →
   **kein Support noetig**. Auflage = die zwei flachen Streifen neben der Mulde.
 * `clamp_strap`: flach, Mulde nach **oben**, Schraubenkopf-/Senkungs-Seite nach
-  unten aufs Bett. Kein Support.
+  unten aufs Bett. Kein Support. Das Teil ist eine offene C-Form (Kanal fuer die
+  Lenkstange); die beiden Klemmbloecke haengen nur am Steg auf der geschlossenen
+  Seite zusammen — beim Hantieren nicht verkanten.
 * `mount_plate`: flach auf die **Korb-Aussenseite (+Y)** legen, der Zapfen zeigt
   nach **oben**. Der Zapfen-Hinterschnitt steht nur ~28° aus der Senkrechten und
   druckt ueberhangfrei; `dovetail_clearance` gleicht die liegend leicht
