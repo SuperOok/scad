@@ -77,12 +77,24 @@ auf `ERROR`/`WARNING` und plausible Dateigroessen achten (siehe `AGENTS.md`).
 
 == Druckhinweise (Orientierung)
 
-* `halterung`: mit der Lenkermulde nach oben drucken; die runde Lenkerbohrung
-  ueberbrueckt sauber. Die Schwalbenschwanz-Nut verlaeuft dann in Druckrichtung
-  (Z) ohne Ueberhang.
-* `clamp_strap`: flach mit der Mulde nach oben.
-* `mount_plate` / `back_plate`: flach auf die Plattenrueckseite legen; der
-  Zapfen zeigt nach oben. Ggf. leichte Stuetzen unter den Schloss-Oesen.
+Leitprinzip: groesste flache Flaeche aufs Bett, Hauptlast in der Layer-Ebene,
+und die Schwalbenschwanz-Flanken als saubere senkrechte Waende (Schiebesitz).
+
+* `halterung`: in Einbaulage ("seated") drucken — Schwalbenschwanz-*Nut* und
+  Mutter-Einschubkanaele zeigen nach **oben**, die Lenkermulde nach **unten**.
+  Die Nut verlaeuft dann senkrecht (Z) und wird masshaltig. Mulde und
+  Verdickungs-Aussparung sind nach unten offene Boegen, die sich selbst
+  ueberbruecken (minimaler Droop am Scheitel, fuer die Klemmung unkritisch) →
+  **kein Support noetig**. Auflage = die zwei flachen Streifen neben der Mulde.
+* `clamp_strap`: flach, Mulde nach **oben**, Schraubenkopf-/Senkungs-Seite nach
+  unten aufs Bett. Kein Support.
+* `mount_plate`: flach auf die **Korb-Aussenseite (+Y)** legen, der Zapfen zeigt
+  nach **oben**. Der Zapfen-Hinterschnitt steht nur ~28° aus der Senkrechten und
+  druckt ueberhangfrei; `dovetail_clearance` gleicht die liegend leicht
+  getreppten Flanken aus. Kein Support. Sitzt der Schwalbenschwanz zu stramm,
+  alternativ **stehend** drucken (Zapfen senkrecht wie die Nut) — dann Brim, da
+  die Standflaeche klein ist.
+* `back_plate`: flach auf die grosse Flaeche, Loecher senkrecht. Kein Support.
 
 == Anpassen
 

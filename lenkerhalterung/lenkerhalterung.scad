@@ -112,8 +112,12 @@ ear_x = plate_width / 2 + ear_gap + ear_width / 2;      // Oesen-X (ausserhalb P
 lock_z = (z_stop + groove_top) / 2;                     // Schlosshoehe (Buegel)
 halt_ear_y1 = front_y;                                  // Halterungs-Oese hinten
 halt_ear_y0 = front_y - ear_depth;
-plate_ear_y0 = front_y + ear_gap;                       // Platten-Oese vorne
-plate_ear_y1 = plate_ear_y0 + ear_depth;
+plate_ear_y0 = front_y + ear_gap;                       // Platten-Oese vorne (1 mm Luft zur Halterungs-Oese)
+// Aussenflaeche buendig mit der Platten-Vorderseite (kein 1-mm-Absatz beim
+// flachen Drucken -> keine Stuetzflaeche unter der grossen Platte noetig).
+// Der hintere ear_gap bleibt erhalten; die Oese wird dadurch (plate_thickness -
+// ear_gap) = 5 mm tief, fuer den duennen Buegel reichlich.
+plate_ear_y1 = plate_front_y;
 
 // =============================================================================
 // Hilfsmodule
@@ -143,15 +147,22 @@ module dovetail_prism(w_top, w_base, depth, h) {
 
 module clamp_screw_holes() {
     // 4 senkrechte M4-Schrauben an den Ecken, NEBEN dem Lenker. Schraube von
-    // unten, Mutter in einer Sechskanttasche oben im Body.
+    // unten, Mutter in einer Sechskanttasche. Damit alle 4 Schrauben GLEICH LANG
+    // sind, sitzt die Mutter ueberall auf gleicher Hoehe (Oberkante = clamp_top).
+    // Auf der Schwalbenschwanz-Seite (sy=+1) deckt die Bruecke die Tasche ab;
+    // dort wird die Sechskanttasche als Einschubkanal bis zur Bruecken-Oberkante
+    // (z_stop) verlaengert, damit die Mutter von oben eingeschoben werden kann.
+    nut_seat_z = clamp_top - clamp_nut_thickness;   // Auflage der Mutter (gleich fuer alle)
     for (sx = [-1, 1], sy = [-1, 1])
         translate([sx * clamp_screw_x, sy * clamp_screw_y, 0]) {
             // Durchgangsloch ueber die ganze Hoehe
             translate([0, 0, -clamp_bottom - eps])
                 cylinder(d = clamp_screw_clear, h = clamp_bottom + clamp_top + 2 * eps);
-            // Mutterntasche oben (oeffnet nach +Z)
-            translate([0, 0, clamp_top - clamp_nut_thickness])
-                nut_pocket(clamp_nut_af, clamp_nut_thickness + eps);
+            // Mutterntasche / Einschubkanal (oeffnet nach +Z). Hinten bis Body-
+            // Oberkante, vorne (unter der Bruecke) bis zur Bruecken-Oberkante.
+            pocket_top = (sy > 0) ? z_stop : clamp_top;
+            translate([0, 0, nut_seat_z])
+                nut_pocket(clamp_nut_af, pocket_top - nut_seat_z + eps);
         }
 }
 
