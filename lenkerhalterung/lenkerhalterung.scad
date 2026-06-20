@@ -69,7 +69,9 @@ groove_side_wall = 4;               // Wand seitlich der Nut
 groove_back_wall = 4;               // Wand hinter der Nut (zum Lenker)
 
 // ---- Platten / Sandwich -----------------------------------------------------
-plate_width = 30;                   // Breite (X)
+plate_screw_spacing = 37;           // Lochabstand (X), Mitte-zu-Mitte = Korbspalt-Abstand
+// plate_width wird unten abgeleitet: breit genug fuer die zwei waagerechten
+// Loecher (plate_screw_spacing) plus Mutterntaschen und Randsteg.
 plate_thickness = 6;                // Dicke (Y) je Platte
 plate_ext_bottom = 9;               // Plattenueberstand unter dem Zapfen
 plate_ext_top = 6;                  // Plattenueberstand ueber dem Zapfen
@@ -119,11 +121,16 @@ plate_back_y = front_y;                         // Plattenrueckseite an Vorderfl
 plate_front_y = plate_back_y + plate_thickness;
 plate_z0 = z_stop - plate_ext_bottom;
 plate_z1 = groove_top + plate_ext_top;
-plate_screw_z_lo = z_stop - plate_ext_bottom / 2;       // unter dem Zapfen
-plate_screw_z_hi = groove_top + plate_ext_top / 2;      // ueber dem Zapfen
+// Zwei waagerechte Schraubenloecher (links/rechts), mittig auf Plattenhoehe.
+nut_pocket_r = plate_nut_af / cos(30) / 2;              // Aussenradius Mutterntasche
+plate_width = max(30, plate_screw_spacing + 2 * (nut_pocket_r + 3.5));  // breit genug
+plate_screw_half = plate_screw_spacing / 2;            // X-Versatz je Loch
+plate_screw_z = (plate_z0 + plate_z1) / 2;             // Reihe auf halber Plattenhoehe
 
 ear_x = plate_width / 2 + ear_gap + ear_width / 2;      // Oesen-X (ausserhalb Platte)
-lock_z = (z_stop + groove_top) / 2;                     // Schlosshoehe (Buegel)
+// Schloss-Oese bewusst nach UNTEN, klar unter die waagerechte Schraubenreihe,
+// damit die +X-Schraube samt Mutterntasche an der Oese vorbeigeht.
+lock_z = plate_screw_z - (nut_pocket_r + ear_thickness / 2 + 2);
 halt_ear_y1 = front_y;                                  // Halterungs-Oese hinten
 halt_ear_y0 = front_y - ear_depth;
 plate_ear_y0 = front_y + ear_gap;                       // Platten-Oese vorne (1 mm Luft zur Halterungs-Oese)
@@ -220,8 +227,8 @@ module halterung() {
             // Schwalbenschwanz-Block vorne oben
             translate([-groove_half_w, groove_block_y0, groove_block_z0])
                 cube([2 * groove_half_w, front_y - groove_block_y0, groove_top - groove_block_z0]);
-            // Schloss-Oese (seitlich, +X), hinterer Part des Oesenpaares
-            lock_ear(halt_ear_y0, halt_ear_y1);
+            // Schloss-Oese vorerst entfernt (Hauptgeometrie zuerst); spaeter
+            // wieder ergaenzen: lock_ear(halt_ear_y0, halt_ear_y1);
         }
         // Lenker-Aussparung (Mulde + Klemmspalt unten)
         rotate([0, 90, 0])
@@ -234,7 +241,7 @@ module halterung() {
             dovetail_prism(dovetail_width_top, dovetail_width_base, dovetail_depth,
                            dovetail_height + eps);
         clamp_screw_holes();
-        lock_hole();
+        // lock_hole();   // Schloss vorerst entfernt
     }
 }
 
@@ -297,8 +304,9 @@ module plate_blank() {
 }
 
 module plate_screw_positions() {
-    for (z = [plate_screw_z_lo, plate_screw_z_hi])
-        translate([0, 0, z]) children();
+    // Zwei Loecher nebeneinander (X), beide auf halber Plattenhoehe.
+    for (x = [-plate_screw_half, plate_screw_half])
+        translate([x, 0, plate_screw_z]) children();
 }
 
 module mount_plate() {
@@ -312,8 +320,8 @@ module mount_plate() {
                     dovetail_width_base - 2 * dovetail_clearance,
                     dovetail_depth - dovetail_clearance,
                     dovetail_height);
-            // Schloss-Oese (vorderer Part), seitlich +X
-            lock_ear(plate_ear_y0, plate_ear_y1);
+            // Schloss-Oese vorerst entfernt; spaeter wieder ergaenzen:
+            // lock_ear(plate_ear_y0, plate_ear_y1);
         }
         // M4-Durchgang + Mutterntasche (oeffnet zur Koerbchenseite, +Y)
         plate_screw_positions() {
@@ -324,7 +332,7 @@ module mount_plate() {
                 rotate([-90, 0, 0])
                     nut_pocket(plate_nut_af, plate_nut_thickness + eps);
         }
-        lock_hole();
+        // lock_hole();   // Schloss vorerst entfernt
     }
 }
 

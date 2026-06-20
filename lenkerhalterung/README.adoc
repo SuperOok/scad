@@ -16,6 +16,10 @@ Eine zweiteilige Fahrradlenker-Halterung fuer ein vorhandenes Bastkoerbchen:
 * Ein kleines *Vorhaengeschloss* durch die seitlich fluchtenden Oesen blockiert
   das Herausziehen nach oben → Diebstahlschutz.
 
+NOTE: Die Schloss-Oesen sind aktuell *deaktiviert* (Aufrufe in `lenkerhalterung.scad`
+auskommentiert), bis die uebrige Geometrie steht. Module und Parameter bleiben
+erhalten und werden spaeter wieder aktiviert.
+
 == Auf einen Blick
 
 [cols="1,3", frame=none, grid=rows]
@@ -28,7 +32,9 @@ Eine zweiteilige Fahrradlenker-Halterung fuer ein vorhandenes Bastkoerbchen:
                       geraden Zonen links/rechts (je ~15 mm), 4× M4
 | Verbindung        | vertikaler Schwalbenschwanz (von oben eingeschoben)
 | Sicherung         | kleines Vorhaengeschloss, Buegel ~2 mm
-| Koerbchen         | mit zwei Platten + M4-Schrauben/-Muttern geklemmt
+| Koerbchen         | mit zwei Platten + 2× M4 geklemmt; die beiden Schrauben
+                      liegen *waagerecht* 37 mm auseinander (`plate_screw_spacing`),
+                      passend durch die zwei Spalte neben dem Korbgriff
 | Druck             | einfarbig, FDM
 |===
 
@@ -51,8 +57,10 @@ Vier Teile, alle aus `lenkerhalterung.scad`:
                    (4× M4). Nach unten und hinten offener Kanal, damit es an der
                    nach unten zeigenden Lenkstange vorbeigeschoben werden kann.
 | `mount_plate`  | innere Platte des Gegenstuecks mit Schwalbenschwanz-Zapfen,
-                   vorderer Schloss-Oese und M4-Mutterntaschen.
-| `back_plate`   | aeussere Platte; klemmt mit `mount_plate` die Koerbchenwand.
+                   Schloss-Oese (unten, +X) und zwei waagerechten M4-Mutterntaschen
+                   (37 mm Abstand).
+| `back_plate`   | aeussere Platte; klemmt mit `mount_plate` die Koerbchenwand
+                   (zwei waagerechte M4-Durchgangsloecher, 37 mm Abstand).
 |===
 
 == Benoetigte Hardware
@@ -60,7 +68,8 @@ Vier Teile, alle aus `lenkerhalterung.scad`:
 * 4× *M4*-Schraube + Mutter für die Lenkerschelle (an den Ecken, neben dem
   Lenker; Schraube von unten, Mutter in der Tasche oben im `halterung`-Teil)
 * 2× *M4*-Schraube + Mutter für das Plattensandwich (Mutter versenkt in der
-  `mount_plate`); Laenge je nach Koerbchenwand-Dicke
+  `mount_plate`), waagerecht 37 mm auseinander durch die Spalte neben dem
+  Korbgriff; Laenge je nach Koerbchenwand-Dicke
 * 1× kleines *Vorhaengeschloss* mit duennem Buegel (~2 mm)
 
 == Export
