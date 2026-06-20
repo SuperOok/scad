@@ -39,9 +39,11 @@ erhalten und werden spaeter wieder aktiviert.
 |===
 
 Die Lenkermitte hat eine Verdickung (Stem-Schelle), die ausgespart wird; die
-Halterung greift beidseitig auf den geraden 15-mm-Zonen. Masse der Verdickung
-und Klemmzonen sind oben in der `.scad` parametrisch
-(`bulge_width`, `bulge_thickness`, `mount_zone_width`).
+Halterung greift beidseitig auf den geraden 15-mm-Zonen. Die Verdickung traegt
+oben und unten lokale Schraubaugen, die noch weiter herausstehen; dafuer raeumt
+`bulge_boss` pauschal radial frei. Masse der Verdickung und Klemmzonen sind oben
+in der `.scad` parametrisch (`bulge_width`, `bulge_thickness`, `bulge_boss`,
+`mount_zone_width`).
 
 == Druckteile
 

@@ -31,6 +31,10 @@ handlebar_clearance = 0.2;          // Spiel in der Schelle
 // ueberbrueckt sie und klemmt auf den geraden Zonen links/rechts.
 bulge_width = 40;                   // Breite der Verdickung (entlang Lenker, X)
 bulge_thickness = 5;                // radialer Ueberstand der Verdickung
+// Die Verdickung (Stem-Schelle) hat oben und unten lokale Schraubaugen, die noch
+// weiter herausstehen. Pauschaler Extra-Radius, der zusaetzlich ausgespart wird,
+// damit diese Augen frei liegen:
+bulge_boss = 5;                     // radialer Extra-Ueberstand der Schraubaugen
 bulge_clearance = 1;                // Luft um die Verdickung (radial)
 bulge_clearance_x = 1;              // Luft seitlich der Verdickung (X)
 mount_zone_width = 15;              // klemmbare, gerade Lenkerlaenge je Seite
@@ -102,7 +106,7 @@ clamp_top = bar_r + clamp_wall;                 // Oberkante Schellen-Body (+Z)
 clamp_bottom = bar_r + clamp_wall;              // Unterkante Schellen-Strap (-Z)
 nut_hex_r = clamp_nut_af / cos(30) / 2;         // Aussenradius der Mutterntasche
 // Freiraum um die mittige Verdickung (radial bzw. entlang Lenker):
-bulge_clear_r = bar_r + bulge_thickness + bulge_clearance;
+bulge_clear_r = bar_r + bulge_thickness + bulge_boss + bulge_clearance;
 bulge_half_clr = bulge_width / 2 + bulge_clearance_x;
 stem_cut_r = stem_diameter / 2 + stem_clearance;    // Aussparungsradius f. Rohr
 clamp_half_w = clamp_screw_x + nut_hex_r + 2;   // halbe Schellenbreite (X)
@@ -361,6 +365,12 @@ module ghost_handlebar() {
         rotate([0, 90, 0])
             translate([0, 0, -bulge_width / 2])
                 cylinder(r = bar_r + bulge_thickness, h = bulge_width);
+        // Schraubaugen oben/unten (angedeutete Huellkurve, +/-Z)
+        for (sz = [-1, 1])
+            translate([0, 0, sz * (bar_r + bulge_thickness)])
+                rotate([0, 90, 0])
+                    translate([0, 0, -bulge_width / 4])
+                        cylinder(r = bulge_boss, h = bulge_width / 2);
         // Lenkstange: Rohr nach unten (2 Grad nach hinten geneigt)
         rotate([-stem_tilt, 0, 0])
             translate([0, 0, -70])
