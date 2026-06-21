@@ -78,6 +78,11 @@ dovetail_width_base = 22;           // Breite hinten (breit, zum Lenker)
 dovetail_width_top = 14;            // Breite vorne (schmal) -> Hinterschnitt
 dovetail_clearance = 0.35;          // FDM-Schiebesitz
 dovetail_floor = 4;                 // Bodenanschlag unter der Nut
+// Nut UND Zapfen zusaetzlich in den vollbreiten Koerper ziehen: der untere Teil
+// des Eingriffs wird dann links/rechts von der vollen Bruecke flankiert (statt
+// nur von den duennen Nutwaenden), und die Last verteilt sich auf mehr Layer
+// statt genau auf die Uebergangslinie Turm->Koerper. Oberkante bleibt gleich.
+dovetail_sink = 6;                  // Eingriff so weit unter z_stop verlaengern
 groove_side_wall = 4;               // Wand seitlich der Nut
 groove_back_wall = 4;               // Wand hinter der Nut (zum Lenker)
 
@@ -130,14 +135,17 @@ clamp_half_d = max(clamp_screw_y + nut_hex_r + 2, bulge_clear_r + 4);
 
 front_y = clamp_half_d;                         // Vorderflaeche (Nut-Oeffnung)
 z_stop = max(clamp_top, bulge_clear_r) + dovetail_floor;  // Sitz ueber Verdickung
-groove_top = z_stop + dovetail_height;          // Oberkante Nut/Block
+groove_top = z_stop + dovetail_height;          // Oberkante Nut/Block (unveraendert)
+// Eingriff reicht um dovetail_sink tiefer in den Koerper; Oberkante bleibt fix.
+dovetail_seat = z_stop - dovetail_sink;         // tatsaechlicher Nut-/Zapfenboden
+dovetail_engage = dovetail_height + dovetail_sink;  // Eingriffslaenge in Z
 groove_block_y0 = front_y - (dovetail_depth + groove_back_wall);
 groove_block_z0 = clamp_top - 2;                // kleiner Ueberlapp zur Schelle
 groove_half_w = dovetail_width_base / 2 + groove_side_wall;
 
 plate_back_y = front_y;                         // Plattenrueckseite an Vorderflaeche
 plate_front_y = plate_back_y + plate_thickness;
-plate_z0 = z_stop - plate_ext_bottom;
+plate_z0 = min(z_stop - plate_ext_bottom, dovetail_seat);  // Platte stuetzt den Zapfen bis zum Boden
 plate_z1 = groove_top + plate_ext_top;
 // Zwei waagerechte Schraubenloecher (links/rechts), mittig auf Plattenhoehe.
 nut_pocket_r = plate_nut_af / cos(30) / 2;              // Aussenradius Mutterntasche
@@ -264,10 +272,10 @@ module halterung() {
                 cylinder(r = bar_hole_r, h = 2 * clamp_half_w + 2 * eps);
         // Mittige Verdickung aussparen
         bulge_recess();
-        // Schwalbenschwanz-Nut (oben offen)
-        translate([0, front_y, z_stop])
+        // Schwalbenschwanz-Nut (oben offen), bis dovetail_sink in den Koerper
+        translate([0, front_y, dovetail_seat])
             dovetail_prism(dovetail_width_top, dovetail_width_base, dovetail_depth,
-                           dovetail_height + eps);
+                           dovetail_engage + eps);
         clamp_screw_holes();
         // Waagerechte Bohrung von hinten fuer das geneigte Rohr
         rear_bore();
@@ -344,12 +352,12 @@ module mount_plate() {
         union() {
             translate([0, plate_back_y, 0]) plate_blank();
             // Schwalbenschwanz-Zapfen (mit Spiel) auf der -Y-Seite
-            translate([0, front_y, z_stop])
+            translate([0, front_y, dovetail_seat])
                 dovetail_prism(
                     dovetail_width_top - 2 * dovetail_clearance,
                     dovetail_width_base - 2 * dovetail_clearance,
                     dovetail_depth - dovetail_clearance,
-                    dovetail_height);
+                    dovetail_engage);
             // Schloss-Oese vorerst entfernt; spaeter wieder ergaenzen:
             // lock_ear(plate_ear_y0, plate_ear_y1);
         }
