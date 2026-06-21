@@ -48,6 +48,15 @@ stem_clearance = 1.5;              // radiale Luft um das Rohr (Schiebespiel)
 stem_tilt = 2;                      // Neigung nach hinten (Grad); Rohr unten -> -Y
 stem_open = "back";                 // offene Schellenseite: "back" (-Y) | "front" (+Y)
 
+// ---- Freistich-Bohrung hinten (Oberteil) -----------------------------------
+// Waagerechte Bohrung von hinten (Achse Y) ins Oberteil, damit das nach hinten
+// geneigte Rohr frei kommt. Der Bohrdurchmesser ist GROESSER als die Oeffnung:
+// der Kreismittelpunkt liegt unter dem Boden, sodass der Schnitt mit der
+// Rueckwand unten bore_width breit ist und bei z=bore_height auslaeuft.
+bore_width = 40;                    // Breite der Oeffnung an der Rueckwand (X)
+bore_height = 10;                   // Hoehe der Oeffnung ab Unterkante (Z)
+bore_depth = 15;                    // Bohrtiefe nach vorn (durch die ganze Rueckwand)
+
 // ---- Schelle (Klemme) -------------------------------------------------------
 clamp_wall = 5;                     // Wandstaerke um den Lenker
 clamp_screw_diameter = 4;           // M4
@@ -109,6 +118,11 @@ nut_hex_r = clamp_nut_af / cos(30) / 2;         // Aussenradius der Mutterntasch
 bulge_clear_r = bar_r + bulge_thickness + bulge_boss + bulge_clearance;
 bulge_half_clr = bulge_width / 2 + bulge_clearance_x;
 stem_cut_r = stem_diameter / 2 + stem_clearance;    // Aussparungsradius f. Rohr
+// Kreis (Achse Y) der Rueckwand-Bohrung: Mittelpunkt unter dem Boden, damit die
+// Sehne bei z=0 = bore_width breit ist und der Scheitel bei z=bore_height liegt.
+// R = ((bore_width/2)^2 + bore_height^2) / (2*bore_height)
+bore_r = (pow(bore_width / 2, 2) + pow(bore_height, 2)) / (2 * bore_height);
+bore_z = bore_height - bore_r;      // Kreismittelpunkt in Z (negativ -> unter Boden)
 clamp_half_w = clamp_screw_x + nut_hex_r + 2;   // halbe Schellenbreite (X)
 // Tiefe: Platz fuer die Muttern UND Rand-Stege, die die beiden Klemmseiten
 // ueber die Mittenaussparung hinweg verbinden.
@@ -216,6 +230,16 @@ module stem_recess() {
     }
 }
 
+// Waagerechte Bohrung von hinten: grosser Zylinder (Achse Y), dessen Mittelpunkt
+// unter dem Boden liegt. Schneidet die Rueckwand als liegendes Kreissegment an
+// (unten bore_width breit, bis z=bore_height) und geht durch die ganze Wand
+// inkl. der inneren Woelbung (Verdickungs-Aussparung).
+module rear_bore() {
+    translate([0, -clamp_half_d - eps, bore_z])
+        rotate([-90, 0, 0])
+            cylinder(r = bore_r, h = bore_depth + eps);
+}
+
 module halterung() {
     difference() {
         union() {
@@ -245,6 +269,8 @@ module halterung() {
             dovetail_prism(dovetail_width_top, dovetail_width_base, dovetail_depth,
                            dovetail_height + eps);
         clamp_screw_holes();
+        // Waagerechte Bohrung von hinten fuer das geneigte Rohr
+        rear_bore();
         // lock_hole();   // Schloss vorerst entfernt
     }
 }
