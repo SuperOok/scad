@@ -100,12 +100,7 @@ plate_nut_thickness = 3.4;          // M4 Mutter Hoehe
 basket_wall_nominal = 10;           // angenommene Koerbchenwand-Dicke (nur Vorschau)
 
 // ---- Schloss ----------------------------------------------------------------
-shackle_diameter = 2;               // Buegeldurchmesser des Vorhaengeschlosses
-lock_hole_diameter = 3;             // Oesen-Loch (Buegel + Spiel)
-ear_width = 9;                      // Oesenbreite (X)
-ear_depth = 6;                      // Oesentiefe (Y)
-ear_gap = 1;                        // Y-Spalt zwischen den beiden Oesen
-ear_thickness = 7;                  // Oesenhoehe (Z)
+lock_hole_diameter = 3;             // Buegelloch (Buegel + Spiel)
 // Einfacher Diebstahlschutz: ein Buegelloch durch die RUECKWAND der Nut, knapp
 // oberhalb des eingeschobenen Zapfens. Der von hinten eingesteckte Schlossbuegel
 // ragt in den Nutraum ueber dem Zapfen und sperrt ihn so am Herausziehen (Nut
@@ -162,19 +157,6 @@ nut_pocket_r = plate_nut_af / cos(30) / 2;              // Aussenradius Mutternt
 plate_width = max(30, plate_screw_spacing + 2 * (nut_pocket_r + 3.5));  // breit genug
 plate_screw_half = plate_screw_spacing / 2;            // X-Versatz je Loch
 plate_screw_z = (plate_z0 + plate_z1) / 2;             // Reihe auf halber Plattenhoehe
-
-ear_x = plate_width / 2 + ear_gap + ear_width / 2;      // Oesen-X (ausserhalb Platte)
-// Schloss-Oese bewusst nach UNTEN, klar unter die waagerechte Schraubenreihe,
-// damit die +X-Schraube samt Mutterntasche an der Oese vorbeigeht.
-lock_z = plate_screw_z - (nut_pocket_r + ear_thickness / 2 + 2);
-halt_ear_y1 = front_y;                                  // Halterungs-Oese hinten
-halt_ear_y0 = front_y - ear_depth;
-plate_ear_y0 = front_y + ear_gap;                       // Platten-Oese vorne (1 mm Luft zur Halterungs-Oese)
-// Aussenflaeche buendig mit der Platten-Vorderseite (kein 1-mm-Absatz beim
-// flachen Drucken -> keine Stuetzflaeche unter der grossen Platte noetig).
-// Der hintere ear_gap bleibt erhalten; die Oese wird dadurch (plate_thickness -
-// ear_gap) = 5 mm tief, fuer den duennen Buegel reichlich.
-plate_ear_y1 = plate_front_y;
 
 // =============================================================================
 // Hilfsmodule
@@ -289,8 +271,6 @@ module halterung() {
                       z_stop - (clamp_top - 3)]);
             // Schwalbenschwanz-Block vorne oben (nach oben verlaengert fuers Schloss)
             dovetail_lock_lug();
-            // Schloss-Oese vorerst entfernt (Hauptgeometrie zuerst); spaeter
-            // wieder ergaenzen: lock_ear(halt_ear_y0, halt_ear_y1);
         }
         // Lenker-Aussparung (Mulde + Klemmspalt unten)
         rotate([0, 90, 0])
@@ -311,7 +291,6 @@ module halterung() {
         clamp_screw_holes();
         // Waagerechte Bohrung von hinten fuer das geneigte Rohr
         rear_bore();
-        // lock_hole();   // Schloss vorerst entfernt
     }
 }
 
@@ -344,28 +323,7 @@ module clamp_strap() {
 }
 
 // =============================================================================
-// Schloss-Oesen (eine seitlich aussen, +X)
-// =============================================================================
-
-// Eine Oese als Quader im Y-Bereich [y0,y1], zentriert auf ear_x / lock_z.
-module lock_ear(y0, y1) {
-    translate([ear_x - ear_width / 2, y0, lock_z - ear_thickness / 2])
-        cube([ear_width, y1 - y0, ear_thickness]);
-    // Steg zur Verbindung mit dem Koerper (von der Blockkante bis zur Oese)
-    bridge_x0 = groove_half_w - eps;
-    translate([bridge_x0, y0, lock_z - ear_thickness / 2])
-        cube([ear_x - ear_width / 2 - bridge_x0 + eps, y1 - y0, ear_thickness]);
-}
-
-module lock_hole() {
-    // Querloch durch beide Oesen (Achse Y), fuer den Schlossbuegel.
-    translate([ear_x, halt_ear_y0 - eps, lock_z])
-        rotate([-90, 0, 0])
-            cylinder(d = lock_hole_diameter, h = plate_ear_y1 - halt_ear_y0 + 2 * eps);
-}
-
-// =============================================================================
-// Gegenstueck: mount_plate (Zapfen + Oese) und back_plate
+// Gegenstueck: mount_plate (Zapfen) und back_plate
 // =============================================================================
 
 module plate_blank() {
@@ -390,8 +348,6 @@ module mount_plate() {
                     dovetail_width_base - 2 * dovetail_clearance,
                     dovetail_depth - dovetail_clearance,
                     dovetail_engage);
-            // Schloss-Oese vorerst entfernt; spaeter wieder ergaenzen:
-            // lock_ear(plate_ear_y0, plate_ear_y1);
         }
         // M4-Durchgang + Mutterntasche (oeffnet zur Koerbchenseite, +Y)
         plate_screw_positions() {
@@ -402,7 +358,6 @@ module mount_plate() {
                 rotate([-90, 0, 0])
                     nut_pocket(plate_nut_af, plate_nut_thickness + eps);
         }
-        // lock_hole();   // Schloss vorerst entfernt
     }
 }
 

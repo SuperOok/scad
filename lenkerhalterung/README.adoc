@@ -13,12 +13,10 @@ Eine zweiteilige Fahrradlenker-Halterung fuer ein vorhandenes Bastkoerbchen:
   haengt sich mit einem Schwalbenschwanz-Zapfen von oben in die Halterung ein.
   Das Koerbchengewicht zieht den Zapfen nach unten in den Sitz – waehrend der
   Fahrt faellt nichts ab.
-* Ein kleines *Vorhaengeschloss* durch die seitlich fluchtenden Oesen blockiert
-  das Herausziehen nach oben → Diebstahlschutz.
-
-NOTE: Die Schloss-Oesen sind aktuell *deaktiviert* (Aufrufe in `lenkerhalterung.scad`
-auskommentiert), bis die uebrige Geometrie steht. Module und Parameter bleiben
-erhalten und werden spaeter wieder aktiviert.
+* Ein kleines *Vorhaengeschloss* sperrt den eingeschobenen Zapfen: sein Buegel
+  wird von hinten durch ein Loch in der Nut-Rueckwand gesteckt und ragt in den
+  Nutraum ueber dem Zapfen, sodass dieser nicht mehr herausgezogen werden kann
+  → Diebstahlschutz.
 
 == Auf einen Blick
 
@@ -54,13 +52,13 @@ Vier Teile, alle aus `lenkerhalterung.scad`:
 | Teil (`part=`) | Beschreibung
 
 | `halterung`    | Schellen-Oberteil: zwei Klemmbloecke + Bruecke ueber die
-                   mittige Verdickung, Schwalbenschwanz-Nut, hintere Schloss-Oese.
+                   mittige Verdickung, Schwalbenschwanz-Nut mit Buegelloch in der
+                   Rueckwand (Schloss).
 | `clamp_strap`  | unteres Schellenteil (C-Form), klemmt den Lenker von unten
                    (4× M4). Nach unten und hinten offener Kanal, damit es an der
                    nach unten zeigenden Lenkstange vorbeigeschoben werden kann.
-| `mount_plate`  | innere Platte des Gegenstuecks mit Schwalbenschwanz-Zapfen,
-                   Schloss-Oese (unten, +X) und zwei waagerechten M4-Mutterntaschen
-                   (37 mm Abstand).
+| `mount_plate`  | innere Platte des Gegenstuecks mit Schwalbenschwanz-Zapfen
+                   und zwei waagerechten M4-Mutterntaschen (37 mm Abstand).
 | `back_plate`   | aeussere Platte; klemmt mit `mount_plate` die Koerbchenwand
                    (zwei waagerechte M4-Durchgangsloecher, 37 mm Abstand).
 |===
@@ -117,7 +115,7 @@ und die Schwalbenschwanz-Flanken als saubere senkrechte Waende (Schiebesitz).
 == Anpassen
 
 Alle Masse stehen als Parameter oben in `lenkerhalterung.scad`
-(Lenkerdurchmesser, Schwalbenschwanz, Plattenmasse, Schloss-Oese …). Die
+(Lenkerdurchmesser, Schwalbenschwanz, Plattenmasse, Buegelloch …). Die
 Vorschau (`part="assembly"`) zeigt alles zusammengebaut; mit `explode=45`
 gibt es eine Explosionsdarstellung.
 
