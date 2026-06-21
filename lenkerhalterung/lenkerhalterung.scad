@@ -30,7 +30,7 @@ handlebar_clearance = 0.2;          // Spiel in der Schelle
 // Mittige Verdickung (Stem-Schelle), die ausgespart werden muss. Die Halterung
 // ueberbrueckt sie und klemmt auf den geraden Zonen links/rechts.
 bulge_width = 40;                   // Breite der Verdickung (entlang Lenker, X)
-bulge_thickness = 5;                // radialer Ueberstand der Verdickung
+bulge_thickness = 5.5;              // radialer Ueberstand der Verdickung (Durchmesser +1 mm ggü. 5)
 // Die Verdickung (Stem-Schelle) hat oben und unten lokale Schraubaugen, die noch
 // weiter herausstehen. Pauschaler Extra-Radius, der zusaetzlich ausgespart wird,
 // damit diese Augen frei liegen:
