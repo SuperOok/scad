@@ -106,6 +106,12 @@ ear_width = 9;                      // Oesenbreite (X)
 ear_depth = 6;                      // Oesentiefe (Y)
 ear_gap = 1;                        // Y-Spalt zwischen den beiden Oesen
 ear_thickness = 7;                  // Oesenhoehe (Z)
+// Einfacher Diebstahlschutz: ein Buegelloch durch die RUECKWAND der Nut, knapp
+// oberhalb des eingeschobenen Zapfens. Der von hinten eingesteckte Schlossbuegel
+// ragt in den Nutraum ueber dem Zapfen und sperrt ihn so am Herausziehen (Nut
+// und Zapfen sind dabei nicht direkt verbunden). Die Nut wird dafuer nach oben
+// verlaengert (gerundeter Kopf), damit ueber dem Loch genug Material bleibt.
+lock_top_extra = 10;                // Nut-Verlaengerung nach oben (Z) fuers Buegelloch
 
 // ---- Auswahl / Qualitaet ----------------------------------------------------
 part = "assembly"; // [assembly, halterung, clamp_strap, mount_plate, back_plate]
@@ -139,6 +145,10 @@ groove_top = z_stop + dovetail_height;          // Oberkante Nut/Block (unveraen
 // Eingriff reicht um dovetail_sink tiefer in den Koerper; Oberkante bleibt fix.
 dovetail_seat = z_stop - dovetail_sink;         // tatsaechlicher Nut-/Zapfenboden
 dovetail_engage = dovetail_height + dovetail_sink;  // Eingriffslaenge in Z
+// Buegelloch in der Rueckwand der Nut, knapp ueber dem sitzenden Zapfen
+// (Zapfen-Oberkante = groove_top). Nut+Block dafuer nach oben verlaengert.
+lock_block_top = groove_top + lock_top_extra;            // Oberkante der verlaengerten Nut
+lock_top_z = groove_top + lock_hole_diameter / 2 + 0.5;  // Buegelloch knapp ueber dem Zapfen
 groove_block_y0 = front_y - (dovetail_depth + groove_back_wall);
 groove_block_z0 = clamp_top - 2;                // kleiner Ueberlapp zur Schelle
 groove_half_w = dovetail_width_base / 2 + groove_side_wall;
@@ -248,6 +258,23 @@ module rear_bore() {
             cylinder(r = bore_r, h = bore_depth + eps);
 }
 
+// Schwalbenschwanz-Block, nach oben verlaengert mit flachem, an den Ober-Vorder-
+// und -Hinterkanten gerundetem Kopf. Die hohe Rueckwand traegt das Buegelloch und
+// behaelt darueber Material; der Nut-Schlitz wird im difference() oben offen
+// durchgezogen (Einschub bleibt moeglich).
+module dovetail_lock_lug() {
+    rf = 2.5;                                   // Rundung der oberen Kanten
+    hull() {
+        translate([-groove_half_w, groove_block_y0, groove_block_z0])
+            cube([2 * groove_half_w, front_y - groove_block_y0,
+                  (lock_block_top - rf) - groove_block_z0]);
+        for (yy = [groove_block_y0 + rf, front_y - rf])
+            translate([0, yy, lock_block_top - rf])
+                rotate([0, 90, 0])
+                    cylinder(r = rf, h = 2 * groove_half_w, center = true);
+    }
+}
+
 module halterung() {
     difference() {
         union() {
@@ -260,9 +287,8 @@ module halterung() {
             translate([-clamp_half_w, groove_block_y0, clamp_top - 3])
                 cube([2 * clamp_half_w, front_y - groove_block_y0,
                       z_stop - (clamp_top - 3)]);
-            // Schwalbenschwanz-Block vorne oben
-            translate([-groove_half_w, groove_block_y0, groove_block_z0])
-                cube([2 * groove_half_w, front_y - groove_block_y0, groove_top - groove_block_z0]);
+            // Schwalbenschwanz-Block vorne oben (nach oben verlaengert fuers Schloss)
+            dovetail_lock_lug();
             // Schloss-Oese vorerst entfernt (Hauptgeometrie zuerst); spaeter
             // wieder ergaenzen: lock_ear(halt_ear_y0, halt_ear_y1);
         }
@@ -272,10 +298,16 @@ module halterung() {
                 cylinder(r = bar_hole_r, h = 2 * clamp_half_w + 2 * eps);
         // Mittige Verdickung aussparen
         bulge_recess();
-        // Schwalbenschwanz-Nut (oben offen), bis dovetail_sink in den Koerper
+        // Schwalbenschwanz-Nut: unten dovetail_sink in den Koerper, oben bis zur
+        // verlaengerten Blockoberkante durchgezogen (Schlitz bleibt oben offen).
         translate([0, front_y, dovetail_seat])
             dovetail_prism(dovetail_width_top, dovetail_width_base, dovetail_depth,
-                           dovetail_engage + eps);
+                           lock_block_top - dovetail_seat + eps);
+        // Buegelloch von hinten durch die Rueckwand in den Nutraum ueber dem
+        // Zapfen (Achse Y). Der Buegel ragt dort hinein und sperrt den Zapfen.
+        translate([0, groove_block_y0 - eps, lock_top_z])
+            rotate([-90, 0, 0])
+                cylinder(d = lock_hole_diameter, h = groove_back_wall + 4 + eps);
         clamp_screw_holes();
         // Waagerechte Bohrung von hinten fuer das geneigte Rohr
         rear_bore();
