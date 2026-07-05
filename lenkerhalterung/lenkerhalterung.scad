@@ -349,13 +349,17 @@ module mount_plate() {
                     dovetail_depth - dovetail_clearance,
                     dovetail_engage);
         }
-        // M4-Durchgang + Mutterntasche (oeffnet zur Koerbchenseite, +Y)
+        // M4-Durchgang + Mutterntasche. Die Schraube kommt von der back_plate
+        // (+Y) durch die Koerbchenwand in die glatte Plattenseite; die Mutter
+        // muss deshalb auf der Schwalbenschwanz-Seite (-Y) sitzen, sonst zieht
+        // sie sich beim Anziehen aus der Tasche. Tasche oeffnet nach -Y; die
+        // Schrauben (x = +/-18.5) liegen seitlich neben dem Zapfen (x = +/-11).
         plate_screw_positions() {
             rotate([-90, 0, 0])
                 translate([0, 0, plate_back_y - eps])
                     cylinder(d = plate_screw_clear, h = plate_thickness + 2 * eps);
-            translate([0, plate_front_y - plate_nut_thickness, 0])
-                rotate([-90, 0, 0])
+            translate([0, plate_back_y + plate_nut_thickness, 0])
+                rotate([90, 0, 0])
                     nut_pocket(plate_nut_af, plate_nut_thickness + eps);
         }
     }
