@@ -1,199 +1,289 @@
 // =============================================================================
-// tarp – Kederschiene punktuell hoeherlegen (Aluprofil-Lever)
+// tarp – Kederschiene punktuell hoeherlegen (Alu-Vierkantrohr als Hebel)
 // =============================================================================
-// Kurze Alu-T-Nut-Profile als Stuetzen legen die Wohnwagen-Kederschiene
-// punktuell ~15-20 cm hoeher. Das Profil ragt nach unten ueber die Schiene
-// hinaus und lehnt sich an die Wand (Hebel) -> das Alu traegt die Biegung,
-// die Druckteil-Clips sehen nur direkte Kraft.
+// Kurze Stuecke Alu-Vierkantrohr 15x15x1 legen die Wohnwagen-Kederschiene
+// punktuell ~15-20 cm hoeher. Das Rohr ragt nach unten ueber die Schiene hinaus
+// und stuetzt sich an der Wand ab (Hebel) -> das Alu traegt die Biegung, die
+// Druckteile sehen nur direkte Kraft.
 //
-// Druckteile:
-//   rail_clip  – unten: T-Nut-Schraubbasis + Keder-Fuss in die vorhandene Schiene
-//   tarp_clip  – oben : T-Nut-Schraubbasis + kurzes Kederschienen-Stueck (Tarp)
-//   wall_pad   – unteres Profilende: breiter Fuss, der sich an die Wand lehnt
-//
-// ACHTUNG: erste parametrische Fassung mit Default-Massen. Kederprofil der
-// vorhandenen Schiene, Tarp-Keder-Durchmesser und Alu-Profil/Nut bitte messen
-// und unten anpassen. Last in der Druckebene halten; Hauptlast ueber Metall
-// (Hammer-/Nutenstein + Schraube). Material ASA/PC, kein PLA.
+// Druckteile – alle drei sind Huelsen, die ueber das Rohr geschoben und mit
+// je EINER M5-Durchsteckschraube gesichert werden:
+//   rail_clip – Huelse + Keder-Fuss in die vorhandene Schiene   (z = 0)
+//   tarp_clip – Huelse mit Deckel + Keder-C-Kanal fuers Tarp     (z = raise_height)
+//   wall_pad  – Huelse mit Deckel + breiter Fuss gegen die Wand  (z = -tube_down_len)
 //
 // Koordinaten: X = entlang der Wand, Y = von der Wand weg (+Y aussen),
-// Z = vertikal. Profil-Rueckseite zur Wand (-Y).
+// Z = vertikal. Rohr-Rueckseite zur Wand (-Y).
+//
+// -----------------------------------------------------------------------------
+// STATIK (Rohr 15x15x1, AlMgSi)
+// -----------------------------------------------------------------------------
+//   I = (15^4 - 13^4)/12 ~ 1839 mm^4,  W = I/7.5 ~ 245 mm^3
+//   sigma_zul ~ 70 MPa (Sicherheit ~2 gegen Rp0.2 ~ 160 MPa) -> M_zul ~ 17 Nm
+//   Groesstes Moment sitzt an der Schienen-Anbindung: M = F * raise_height.
+//   Bei raise_height = 180 mm -> F_zul ~ 95 N (~9.5 kg) Zug je Stuetze.
+//   => Mehrere Stuetzen setzen, Tarp nicht knallhart spannen. Bei Sturm abbauen.
+//
+//   Auflagerkraefte (F = Zug am oberen Keder, nach aussen):
+//     Wand-Pad  R_wand = F * raise_height / tube_down_len   (0.82 F bei 180/220)
+//     Schiene   R_rail = F + R_wand                          (1.82 F)
+//   Die vorhandene Kederschiene wird also mit ~1.8 F nach AUSSEN gezogen –
+//   das ist das schwaechste Glied, deshalb foot_len bewusst lang (60 mm).
+//   Groesseres tube_down_len senkt beide Auflagerkraefte (aber nicht M).
+//
+// -----------------------------------------------------------------------------
+// BOHREN – Richtung ist entscheidend
+// -----------------------------------------------------------------------------
+//   Alle Bohrungen laufen entlang X (parallel zur Wand), also durch die beiden
+//   SEITENwaende des Rohrs. Dort liegt das Material nahe der neutralen Faser:
+//     Bohrung 5.5 mm entlang X (Stege)   -> ~1.5 % Verlust an I
+//     Bohrung 5.5 mm entlang Y (Gurte)   -> ~29 % Verlust an I
+//   Niemals in Lastrichtung (Y) bohren.
+//
+//   Vorgehen: Huelse aufschieben, ausrichten, durch die Bohrung der Huelse
+//   anzeichnen, Huelse abziehen, Rohr bohren (5.5 mm), wieder aufschieben.
+//
+//   Verschraubung: M5 Zylinderkopf + Scheibe / Nyloc + Scheibe, beides AUSSEN.
+//   Bewusst keine Mutterntasche im Bauteil – bei 3.5 mm Huelsenwand wuerde die
+//   Senkung in den Rohrquerschnitt schneiden.
+//   Mutter nur handfest anziehen (Schraube = Scherstift, kein Klemmverband).
+//   Wer fest anziehen will, braucht eine 13 mm lange Distanzhuelse IM Rohr,
+//   sonst wird die 1-mm-Wand eingedrueckt.
+//
+// -----------------------------------------------------------------------------
+// DRUCK
+// -----------------------------------------------------------------------------
+//   Material ASA/PC/PETG-CF, kein PLA (Sonne, Kriechen).
+//   Empfohlene Lage: Teil so kippen, dass die KEDER-Achse (Modell-X) senkrecht
+//   steht. Dann sind Fuss, Kanal und Wandplatte reine Vertikal-Extrusionen
+//   (keine Stuetzen), und der Lastpfad Fuss -> Huelse liegt in der Schichtebene.
+//   Einzige Bruecke ist die quadratische Rohroeffnung (15.4 mm) – unkritisch.
+//   >= 4 Perimeter, >= 40 % Infill.
+//
+// -----------------------------------------------------------------------------
+// !! UNGEMESSENE ANNAHMEN – vor dem Druck pruefen (mit ANNAHME markiert) !!
+// -----------------------------------------------------------------------------
+//   rail_keder_d, rail_slot_w, rail_lip_depth, rail_depth, rail_reach
+//     -> Profil der vorhandenen Wohnwagen-Kederschiene, inkl. Schlitzrichtung
+//        (hier: Schlitz zeigt nach AUSSEN / +Y, Hals waagerecht).
+//   tarp_keder_d -> Kederband am Tarp (oft 7-8 mm).
 // =============================================================================
 
-// ---- Alu-Profil (T-Nut) -----------------------------------------------------
-profile_size = 30;        // 30x30 (oder 40)
-slot_width = 8;           // Nutoeffnung (Nut 8)
+// ---- Alu-Vierkantrohr (gemessen) --------------------------------------------
+tube_w      = 15;    // Aussenmass, quadratisch
+tube_wall   = 1;     // Wandstaerke (nur Doku/Statik)
+tube_fit    = 0.4;   // Spiel Huelse <-> Rohr (Schiebesitz)
 
-// ---- Schraub-Interface (Hammer-/Nutenstein) ---------------------------------
-bolt_clear = 6.6;         // M6 Durchgang
-bolt_head = 11;           // M6 Zylinderkopf-Durchmesser
-bolt_head_h = 6;          // Kopf-Senkung
+// ---- Huelse ------------------------------------------------------------------
+sleeve_wall = 3.5;   // Wandstaerke der gedruckten Huelse
+sleeve_r    = 2;     // Kantenradius aussen
+
+// ---- Durchsteckschraube (Achse X, durch die Rohr-Seitenwaende) ---------------
+pin_d       = 5.4;   // M5 Durchgang im Druckteil (Rohr: 5.5 mm bohren)
 
 // ---- Vorhandene Wohnwagen-Kederschiene (Fuss schiebt hinein) ----------------
-rail_keder_d = 7;         // Keder-Bead-Durchmesser der Schiene
-rail_keder_neck = 3;      // Steg-/Halsdicke
-foot_len = 40;            // Laenge des Keder-Fusses (entlang X)
-neck_len = 14;            // Abstand Schiene -> Profilrueckseite (Hebel zur Wand)
+rail_keder_d   = 7;    // ANNAHME Keder-Bead-Durchmesser der Schiene
+rail_slot_w    = 3;    // ANNAHME Schlitzbreite der Schiene
+rail_lip_depth = 4;    // ANNAHME Tiefe, ueber die der Hals duenn bleiben muss
+rail_depth     = 10;   // ANNAHME Bead-Mitte -> Wandflaeche
+rail_reach     = 12;   // Bead-Mitte -> Huelsen-Rueckseite (setzt den Wandabstand)
+rail_fit       = 0.4;  // Untermass von Bead und Hals
+foot_len       = 60;   // Laenge des Fusses in der Schiene (X) – Lastverteilung
+foot_web_t     = 6;    // Stegdicke ausserhalb der Schiene
+foot_root_h    = 12;   // Steghoehe am Uebergang zur Huelse (Kerbentschaerfung)
 
-// ---- Tarp-Keder (Kanal-Stummel oben) ----------------------------------------
-tarp_keder_d = 8;         // Tarp-Kederband-Durchmesser
-tarp_clear = 0.6;         // Spiel im Kanal
-tarp_slot = 4;            // Schlitzbreite (< Bead -> haelt)
+// ---- Tarp-Keder (C-Kanal oben) ----------------------------------------------
+tarp_keder_d      = 8;    // ANNAHME Tarp-Kederband-Durchmesser
+tarp_fit          = 0.6;  // Spiel im Kanal
+tarp_slot_w       = 4;    // Schlitzbreite (< Bead -> haelt)
 tarp_channel_wall = 3.5;  // Wandstaerke des Kanals
-stub_len = 50;            // Laenge des Kederschienen-Stuecks (entlang X)
+stub_len          = 60;   // Laenge des Kederschienen-Stuecks (X)
+stub_web_t        = 6;    // Steg Huelse -> Kanal
 
-// ---- Clip-Basis / Aufbau ----------------------------------------------------
-clip_width = 28;          // Breite der Clip-Basis (X)
-clip_wall = 6;            // Dicke der Clip-Basis (auf der Profilflaeche)
-mount_len = 36;           // Laenge der Clip-Basis entlang Profil (Z)
-fillet = 2;               // Radius an Lastkanten
+// ---- Huelsenlaengen ----------------------------------------------------------
+rail_sleeve_len = 45;
+tarp_sleeve_len = 45;
+pad_sleeve_len  = 55;
+cap_t           = 3;   // Deckelstaerke am Rohrende (tarp_clip / wall_pad)
 
-raise_height = 180;       // Hoehe tarp_clip ueber rail_clip (15-20 cm)
-profile_down_len = 150;   // wie weit das Profil unter die Schiene ragt
-wall_gap = 18;            // Standoff Profilrueckseite -> Wand (Pad ueberbrueckt)
+// ---- Wand-Pad ----------------------------------------------------------------
+pad_w      = 70;   // Breite an der Wand (X)
+pad_h      = 50;   // Hoehe an der Wand (Z)
+pad_t      = 5;    // Dicke der Wandplatte
+pad_root_h = 18;   // Hoehe der Rippe an der Huelse
+gusset_w   = 30;   // Breite der Rippe (X)
 
-// ---- Wand-Pad ---------------------------------------------------------------
-pad_w = 70;               // Breite (X)
-pad_h = 48;               // Hoehe (Z)
-pad_t = 5;                // Dicke an der Wand
+// ---- Aufbau ------------------------------------------------------------------
+raise_height  = 180;  // tarp_clip ueber rail_clip (15-20 cm)
+tube_down_len = 220;  // wie weit das Rohr unter die Schiene ragt
+                      // 180 + 220 + Ueberstand -> 2 Stuetzen je Meter Rohr
 
-// ---- Auswahl / Qualitaet ----------------------------------------------------
+// ---- Auswahl / Qualitaet -----------------------------------------------------
 part = "assembly"; // [assembly, rail_clip, tarp_clip, wall_pad]
 explode = 0;
 $fn = 48;
 eps = 0.01;
 
-// ---- Abgeleitet -------------------------------------------------------------
-front_y = profile_size / 2;             // Profil-Vorderflaeche (+Y)
-back_y = -profile_size / 2;             // Profil-Rueckseite (-Y, Wandseite)
-wall_y = back_y - wall_gap;             // Wandflaeche
+// ---- Abgeleitet --------------------------------------------------------------
+sleeve_in   = tube_w + tube_fit;             // lichte Weite der Huelse
+sleeve_out  = sleeve_in + 2 * sleeve_wall;   // Aussenmass der Huelse
+sleeve_half = sleeve_out / 2;
+front_y     =  sleeve_half;                  // Huelsen-Vorderseite (+Y)
+back_y      = -sleeve_half;                  // Huelsen-Rueckseite  (-Y, Wandseite)
+y_bead      = back_y - rail_reach;           // Bead-Mitte in der vorhandenen Schiene
+wall_y      = y_bead - rail_depth;           // Wandflaeche
+ch_out      = tarp_keder_d + tarp_fit + 2 * tarp_channel_wall;  // Kanal aussen
+y_ch        = front_y + ch_out / 2;          // Kanalachse vor der Huelse
 
 // =============================================================================
-// Gemeinsame Module
+// Hilfsmodule
 // =============================================================================
 
-// Schraub-Durchgang + Kopfsenkung, Achse +Y (von aussen in die Nut).
-module bolt_y(y_face, z, depth) {
-    translate([0, y_face - eps, z]) rotate([-90, 0, 0])
-        cylinder(d = bolt_clear, h = depth + 2 * eps);
-    translate([0, y_face + depth - bolt_head_h, z]) rotate([-90, 0, 0])
-        cylinder(d = bolt_head, h = bolt_head_h + eps);
+// Extrudiert ein 2D-Profil entlang X, zentriert um x = 0.
+// Das 2D-Profil wird in [y, z] gezeichnet: 2D-x -> Modell-Y, 2D-y -> Modell-Z.
+module x_extrude(len) {
+    translate([-len / 2, 0, 0]) rotate([90, 0, 90])
+        linear_extrude(height = len) children();
 }
 
-// Clip-Basis auf der Profil-Vorderseite (+Y), Dicke nach +Y.
-module mount_front(z_center) {
-    difference() {
-        translate([-clip_width / 2, front_y, z_center - mount_len / 2])
-            cube([clip_width, clip_wall, mount_len]);
-        bolt_y(front_y, z_center, clip_wall);
-    }
+// Vollmaterial der Huelse (Achse Z, zentriert um z = 0), Kanten gerundet.
+module sleeve_solid(len) {
+    translate([0, 0, -len / 2]) linear_extrude(height = len)
+        offset(r = sleeve_r) square(sleeve_out - 2 * sleeve_r, center = true);
 }
 
-// Clip-Basis auf der Profil-Rueckseite (-Y, Wandseite), Dicke nach -Y.
-module mount_back(z_center, len = mount_len) {
-    difference() {
-        translate([-clip_width / 2, back_y - clip_wall, z_center - len / 2])
-            cube([clip_width, clip_wall, len]);
-        // Bolzen von der Wandseite (-Y) in die Nut (+Y)
-        translate([0, back_y - clip_wall - eps, z_center]) rotate([-90, 0, 0])
-            cylinder(d = bolt_clear, h = clip_wall + 2 * eps);
-        translate([0, back_y - clip_wall - eps, z_center]) rotate([-90, 0, 0])
-            cylinder(d = bolt_head, h = bolt_head_h + eps);
-    }
+// Quadratischer Rohrkanal als Abzug. cap_top/cap_bot > 0 schliesst das Ende.
+module tube_cavity(len, cap_top = 0, cap_bot = 0) {
+    h = len + 2 * eps - cap_top - cap_bot;
+    translate([0, 0, -len / 2 - eps + cap_bot + h / 2])
+        cube([sleeve_in, sleeve_in, h], center = true);
 }
 
-// Keder-Bead (Rundprofil) entlang X mit Hals -> in die vorhandene Schiene.
-module keder_foot() {
-    // Bead an der Wand (-Y), Hals verbindet zur Profilrueckseite.
-    bead_y = back_y - neck_len;
-    // Hals (Steg)
-    translate([-foot_len / 2, bead_y, -rail_keder_neck / 2])
-        cube([foot_len, neck_len, rail_keder_neck]);
-    // Bead (Zylinder entlang X)
-    translate([-foot_len / 2, bead_y, 0]) rotate([0, 90, 0])
-        cylinder(d = rail_keder_d, h = foot_len);
-}
-
-// Kurzer Keder-Kanal (C-Profil) entlang X, Schlitz nach unten (-Z).
-module keder_channel() {
-    outer = tarp_keder_d + 2 * tarp_channel_wall;
-    difference() {
-        translate([-stub_len / 2, -outer / 2, -outer / 2])
-            cube([stub_len, outer, outer]);
-        // Bohrung (Bead)
-        translate([-stub_len / 2 - eps, 0, 0]) rotate([0, 90, 0])
-            cylinder(d = tarp_keder_d + tarp_clear, h = stub_len + 2 * eps);
-        // Schlitz nach unten
-        translate([-stub_len / 2 - eps, -tarp_slot / 2, -outer])
-            cube([stub_len + 2 * eps, tarp_slot, outer]);
-    }
+// Durchsteckschraube, Achse X (durch die Seitenwaende des Rohrs).
+module pin_hole(z = 0) {
+    translate([-sleeve_out, 0, z]) rotate([0, 90, 0])
+        cylinder(d = pin_d, h = 2 * sleeve_out);
 }
 
 // =============================================================================
-// Druckteile
+// 2D-Profile (gezeichnet in [y, z])
+// =============================================================================
+
+// Keder-Fuss: Bead in der vorhandenen Schiene, duenner Hals durch den Schlitz,
+// danach Verbreiterung zur Huelse.
+module foot_profile_2d() {
+    neck = rail_slot_w - rail_fit;
+    union() {
+        translate([y_bead, 0]) circle(d = rail_keder_d - rail_fit);
+        translate([y_bead, -neck / 2]) square([rail_lip_depth, neck]);
+        hull() {
+            translate([y_bead + rail_lip_depth - eps, -neck / 2])
+                square([eps, neck]);
+            translate([back_y + sleeve_wall - eps, -foot_root_h / 2])
+                square([eps, foot_root_h]);
+        }
+    }
+}
+
+// Kurzes Kederschienen-Stueck fuers Tarp: runder C-Kanal, Schlitz nach unten,
+// plus Ruecken-Steg zur Huelse.
+module channel_profile_2d() {
+    difference() {
+        union() {
+            translate([y_ch, 0]) circle(d = ch_out);
+            translate([front_y - sleeve_wall, -stub_web_t / 2])
+                square([y_ch - front_y + sleeve_wall, stub_web_t]);
+        }
+        translate([y_ch, 0]) circle(d = tarp_keder_d + tarp_fit);
+        translate([y_ch - tarp_slot_w / 2, -ch_out]) square([tarp_slot_w, ch_out]);
+    }
+}
+
+// Wandplatte (flach an der Wand).
+module pad_profile_2d() {
+    translate([wall_y, -pad_h / 2]) square([pad_t, pad_h]);
+}
+
+// Rippe Wandplatte -> Huelse.
+module gusset_profile_2d() {
+    hull() {
+        translate([wall_y, -pad_h / 2]) square([pad_t + eps, pad_h]);
+        translate([back_y + sleeve_wall - eps, -pad_root_h / 2])
+            square([eps, pad_root_h]);
+    }
+}
+
+// =============================================================================
+// Druckteile (jeweils im Ursprung modelliert)
 // =============================================================================
 
 module rail_clip() {
-    mount_front(0);
-    // Fuss greift von der Profilrueckseite zur Schiene an der Wand
-    keder_foot();
-    // Verbindung Basis (vorne) -> Fuss (hinten) ueber das Profil hinweg
-    translate([-clip_width / 2, back_y - neck_len, -rail_keder_neck / 2])
-        cube([clip_width, profile_size + neck_len + clip_wall, rail_keder_neck]);
+    difference() {
+        union() {
+            sleeve_solid(rail_sleeve_len);
+            x_extrude(foot_len) foot_profile_2d();
+        }
+        tube_cavity(rail_sleeve_len);
+        pin_hole();
+    }
 }
 
 module tarp_clip() {
-    mount_front(raise_height);
-    // Kanal vor dem Profil, oberhalb der Basismitte
-    translate([0, front_y + clip_wall + (tarp_keder_d + 2 * tarp_channel_wall) / 2,
-               raise_height])
-        keder_channel();
-    // Anbindung Basis -> Kanal
-    translate([-clip_width / 2, front_y, raise_height - tarp_slot])
-        cube([clip_width, clip_wall + (tarp_keder_d) / 2 + eps, 2 * tarp_slot]);
+    difference() {
+        union() {
+            sleeve_solid(tarp_sleeve_len);
+            x_extrude(stub_len) channel_profile_2d();
+        }
+        tube_cavity(tarp_sleeve_len, cap_top = cap_t);
+        pin_hole();
+    }
 }
 
 module wall_pad() {
-    z = -profile_down_len;
-    mount_back(z, pad_h);
-    // breiter Pad an der Wand
-    translate([-pad_w / 2, wall_y, z - pad_h / 2])
-        cube([pad_w, pad_t, pad_h]);
-    // Arm Profilrueckseite -> Wand
-    translate([-clip_width / 2, wall_y, z - clip_wall / 2])
-        cube([clip_width, wall_gap + clip_wall, clip_wall]);
+    difference() {
+        union() {
+            sleeve_solid(pad_sleeve_len);
+            x_extrude(pad_w) pad_profile_2d();
+            x_extrude(gusset_w) gusset_profile_2d();
+        }
+        tube_cavity(pad_sleeve_len, cap_bot = cap_t);
+        pin_hole();
+    }
 }
 
 // =============================================================================
 // Vorschau / Dispatch
 // =============================================================================
 
-module ghost_profile() {
+module ghost_tube() {
+    // Das Rohr endet in beiden Deckeln, es steht nirgends heraus.
+    top =  raise_height  + tarp_sleeve_len / 2 - cap_t;
+    bot = -tube_down_len - pad_sleeve_len  / 2 + cap_t;
     color([0.7, 0.7, 0.75, 0.5])
-        translate([-profile_size / 2, back_y, -profile_down_len - 25])
-            cube([profile_size, profile_size, raise_height + profile_down_len + 60]);
+        translate([0, 0, bot]) linear_extrude(height = top - bot)
+            square(tube_w, center = true);
 }
 
 module ghost_wall() {
     color([0.85, 0.8, 0.7, 0.35])
-        translate([-120, wall_y - 6, -profile_down_len - 40])
-            cube([240, 6, raise_height + profile_down_len + 90]);
+        translate([-130, wall_y - 6, -tube_down_len - 60])
+            cube([260, 6, raise_height + tube_down_len + 120]);
 }
 
+// Grobe Andeutung der vorhandenen Kederschiene an der Wand bei z = 0.
 module ghost_rail() {
-    // grobe Andeutung der vorhandenen Kederschiene an der Wand bei z=0
     color([0.6, 0.6, 0.6, 0.5])
-        translate([-120, back_y - neck_len - 2, -8])
-            cube([240, 6, 16]);
+        translate([-130, wall_y, -12])
+            cube([260, rail_depth + rail_keder_d / 2, 24]);
 }
 
 module assembly() {
     ghost_wall();
     ghost_rail();
-    ghost_profile();
-    color("SteelBlue")    translate([0, 0, -explode]) rail_clip();
-    color("Goldenrod")    translate([0, explode, explode]) tarp_clip();
-    color("IndianRed")    translate([0, -explode, -2 * explode]) wall_pad();
+    ghost_tube();
+    color("SteelBlue") translate([0, 0, -explode])                 rail_clip();
+    color("Goldenrod") translate([0, explode, raise_height + explode])   tarp_clip();
+    color("IndianRed") translate([0, -explode, -tube_down_len - 2 * explode]) wall_pad();
 }
 
 if (part == "rail_clip")      rail_clip();
