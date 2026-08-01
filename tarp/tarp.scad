@@ -28,7 +28,12 @@
 //     Wand-Pad  R_wand = F * raise_height / tube_down_len   (0.82 F bei 180/220)
 //     Schiene   R_rail = F + R_wand                          (1.82 F)
 //   Die vorhandene Kederschiene wird also mit ~1.8 F nach AUSSEN gezogen –
-//   das ist das schwaechste Glied, deshalb foot_len bewusst lang (60 mm).
+//   das ist das schwaechste Glied. Der Keder-Fuss ist trotzdem nur so lang
+//   wie die Huelse (~22 mm), weil die vorhandene Schiene am Anfang leicht
+//   gebogen ist: ein langes gerades Keder-Stueck laesst sich dort nicht
+//   einfaedeln. Damit liegen bei F_zul ~7.7 N/mm auf den Schienenlippen
+//   (statt 2.9 N/mm bei 60 mm Fuss) -> das ueber MEHR STUETZEN ausgleichen
+//   und weniger stramm spannen, nicht ueber einen laengeren Fuss.
 //   Groesseres tube_down_len senkt beide Auflagerkraefte (aber nicht M).
 //
 // -----------------------------------------------------------------------------
@@ -88,7 +93,10 @@ rail_lip_depth = 4;    // ANNAHME Tiefe, ueber die der Hals duenn bleiben muss
 rail_depth     = 10;   // ANNAHME Bead-Mitte -> Wandflaeche
 rail_reach     = 12;   // Bead-Mitte -> Huelsen-Rueckseite (setzt den Wandabstand)
 rail_fit       = 0.4;  // Untermass von Bead und Hals
-foot_len       = 60;   // Laenge des Fusses in der Schiene (X) – Lastverteilung
+foot_extra     = 0;    // Fusslaenge = Huelsenbreite + 2*foot_extra (s. Abgeleitet).
+                       // Kurz halten! Die vorhandene Schiene ist am Anfang
+                       // gebogen, ein langes gerades Keder-Stueck haengt fest.
+foot_chamfer   = 1.2;  // Anfasung an den Fussenden (Einfaedelhilfe)
 foot_web_t     = 6;    // Stegdicke ausserhalb der Schiene
 foot_root_h    = 12;   // Steghoehe am Uebergang zur Huelse (Kerbentschaerfung)
 
@@ -130,6 +138,7 @@ sleeve_out  = sleeve_in + 2 * sleeve_wall;   // Aussenmass der Huelse
 sleeve_half = sleeve_out / 2;
 front_y     =  sleeve_half;                  // Huelsen-Vorderseite (+Y)
 back_y      = -sleeve_half;                  // Huelsen-Rueckseite  (-Y, Wandseite)
+foot_len    = sleeve_out + 2 * foot_extra;   // Fuss nur so breit wie die Huelse
 y_bead      = back_y - rail_reach;           // Bead-Mitte in der vorhandenen Schiene
 wall_y      = y_bead - rail_depth;           // Wandflaeche
 ch_out      = tarp_keder_d + tarp_fit + 2 * tarp_channel_wall;  // Kanal aussen
@@ -185,6 +194,21 @@ module foot_profile_2d() {
     }
 }
 
+// Begrenzungskoerper, der die X-Enden des Fusses um c anfast (Einfaedelhilfe).
+// Zurueckgenommen werden nur die Bead-Nase (-Y) und die Stegkanten; die Wurzel
+// an der Huelse (+Y) bleibt auf voller Breite stehen.
+module foot_end_taper(len, c) {
+    y_lo = y_bead - (rail_keder_d - rail_fit) / 2;
+    y_hi = back_y + sleeve_wall;
+    z_h  = foot_root_h / 2;
+    hull() {
+        translate([-(len / 2 - c), y_lo, -z_h])
+            cube([len - 2 * c, y_hi - y_lo, 2 * z_h]);
+        translate([-len / 2, y_lo + c, -z_h + c])
+            cube([len, y_hi - y_lo - c, 2 * z_h - 2 * c]);
+    }
+}
+
 // Kurzes Kederschienen-Stueck fuers Tarp: runder C-Kanal, Schlitz nach unten,
 // plus Ruecken-Steg zur Huelse.
 module channel_profile_2d() {
@@ -221,7 +245,10 @@ module rail_clip() {
     difference() {
         union() {
             sleeve_solid(rail_sleeve_len);
-            x_extrude(foot_len) foot_profile_2d();
+            intersection() {
+                x_extrude(foot_len) foot_profile_2d();
+                foot_end_taper(foot_len, foot_chamfer);
+            }
         }
         tube_cavity(rail_sleeve_len);
         pin_hole();
