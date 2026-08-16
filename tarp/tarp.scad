@@ -88,6 +88,15 @@
 //
 //   Die Neigung kippt nur Bead und Hals um die Bead-Mitte; die Fusswurzel an
 //   der Huelse bleibt waagerecht und das Rohr senkrecht.
+//
+// -----------------------------------------------------------------------------
+// PROBEDRUCK 2026-08-16 (rail_clip am Wohnwagen anprobiert)
+// -----------------------------------------------------------------------------
+//   Der Fuss klemmte beim Einfaedeln. Ursache war der Hals, nicht der Bead:
+//   mit einem gemeinsamen Untermass von 0.4 mm blieben nur 4.6 mm fuer den
+//   5-mm-Schlitz. Bead- und Halspassung sind deshalb getrennt (bead_fit /
+//   neck_fit), der Hals hat jetzt 0.5 mm mehr Luft im Durchmesser.
+//   Der Bead bleibt bewusst satt – er ist es, der die Last haelt.
 // =============================================================================
 
 // ---- Alu-Vierkantrohr (gemessen) --------------------------------------------
@@ -119,7 +128,11 @@ rail_clear     = 5;    // GEMESSEN freie Luft zwischen Schienen-VORDERKANTE und
                        // Wandabstand des Rohrs faellt daraus ab (s. Abgeleitet).
                        // Muss > neck_extra sein, sonst weitet sich der Fuss
                        // schon in der Schiene auf.
-rail_fit       = 0.4;  // Untermass von Bead und Hals
+bead_fit       = 0.4;  // Untermass des Beads in der runden Nut
+neck_fit       = 0.9;  // Untermass des Halses im Schlitz. PROBEDRUCK 2026-08-16:
+                       // mit 0.4 (= wie der Bead) klemmte der Fuss beim
+                       // Einfaedeln; 0.5 mm mehr Luft im Durchmesser reicht.
+                       // Bewusst getrennt vom Bead – der soll satt bleiben.
 foot_extra     = 0;    // Fusslaenge = Huelsenbreite + 2*foot_extra (s. Abgeleitet).
                        // Kurz halten! Die vorhandene Schiene ist am Anfang
                        // gebogen, ein langes gerades Keder-Stueck haengt fest.
@@ -180,17 +193,18 @@ ch_out      = tarp_keder_d + tarp_fit + 2 * tarp_channel_wall;  // Kanal aussen
 y_ch        = front_y + ch_out / 2;          // Kanalachse vor der Huelse
 
 // ---- Kontrollausgaben / Plausibilitaet (bei jedem Render im Log) -------------
-echo(str("Hals ", rail_slot_w - rail_fit, " x ", neck_len,
-         " mm, Schlitzneigung ", rail_slot_angle, " Grad"));
+echo(str("Hals ", rail_slot_w - neck_fit, " x ", neck_len,
+         " mm (Schlitz ", rail_slot_w, "), Bead ", rail_keder_d - bead_fit,
+         " (Nut ", rail_keder_d, "), Schlitzneigung ", rail_slot_angle, " Grad"));
 echo(str("Freiraum Schienenvorderkante -> Huelse: ", rail_clear,
-         " mm  (darin weitet sich der Fuss von ", rail_slot_w - rail_fit,
+         " mm  (darin weitet sich der Fuss von ", rail_slot_w - neck_fit,
          " auf ", foot_root_h, " mm auf)"));
 echo(str("Bead-Mitte -> Huelse: ", rail_reach,
          " mm, Huelsen-Rueckseite -> Wand: ", back_y - wall_y, " mm"));
 
 assert(rail_clear > neck_extra,
        "rail_clear <= neck_extra: der Fuss wuerde sich schon in der Schiene aufweiten.");
-assert(rail_slot_w - rail_fit < rail_keder_d - rail_fit,
+assert(rail_slot_w - neck_fit < rail_keder_d - bead_fit,
        "Hals nicht schmaler als der Bead – der Fuss wuerde durch den Schlitz rutschen.");
 assert(rail_depth > rail_keder_d / 2,
        "rail_depth zu klein: der Bead wuerde hinten aus der Schiene in die Wand ragen.");
@@ -236,9 +250,9 @@ module pin_hole(z = 0) {
 // Versatz faengt der Uebergang auf. Der Bead selbst ist rund, die Drehung
 // wirkt sich nur auf Hals und Aufweitung aus.
 module foot_profile_2d() {
-    neck = rail_slot_w - rail_fit;
+    neck = rail_slot_w - neck_fit;
     union() {
-        translate([y_bead, 0]) circle(d = rail_keder_d - rail_fit);
+        translate([y_bead, 0]) circle(d = rail_keder_d - bead_fit);
         translate([y_bead, 0]) rotate(rail_slot_angle)
             translate([0, -neck / 2]) square([neck_len, neck]);
         hull() {
@@ -254,7 +268,7 @@ module foot_profile_2d() {
 // Zurueckgenommen werden nur die Bead-Nase (-Y) und die Stegkanten; die Wurzel
 // an der Huelse (+Y) bleibt auf voller Breite stehen.
 module foot_end_taper(len, c) {
-    y_lo = y_bead - (rail_keder_d - rail_fit) / 2;
+    y_lo = y_bead - (rail_keder_d - bead_fit) / 2;
     y_hi = back_y + sleeve_wall;
     z_h  = foot_root_h / 2;
     hull() {
