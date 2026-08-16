@@ -66,12 +66,28 @@
 //   >= 4 Perimeter, >= 40 % Infill.
 //
 // -----------------------------------------------------------------------------
-// !! UNGEMESSENE ANNAHMEN – vor dem Druck pruefen (mit ANNAHME markiert) !!
+// SCHIENENPROFIL (2026-08-02 am Wohnwagen abgenommen)
 // -----------------------------------------------------------------------------
-//   rail_keder_d, rail_slot_w, rail_lip_depth, rail_depth, rail_reach
-//     -> Profil der vorhandenen Wohnwagen-Kederschiene, inkl. Schlitzrichtung
-//        (hier: Schlitz zeigt nach AUSSEN / +Y, Hals waagerecht).
-//   tarp_keder_d -> Kederband am Tarp (oft 7-8 mm).
+//   Bead 9, Schlitz 5, Lippe 2, Bead-Mitte -> Wand 10, Freiraum vor der
+//   Schiene 5. Tarp-Keder 9. Der Schlitz steht NICHT waagerecht, sondern
+//   oeffnet sich ~10 Grad nach oben-aussen (rail_slot_angle).
+//
+//   Alle Schienenmasse sind so definiert, dass sie direkt messbar sind:
+//     rail_keder_d   Innendurchmesser der runden Nut
+//     rail_slot_w    lichte Schlitzbreite
+//     rail_lip_depth Lippendicke, ab Bead-AUSSENkante (nicht ab Mitte)
+//     rail_depth     Bead-Mitte -> Wandflaeche
+//     rail_clear     freie Luft Schienen-Vorderkante -> Rohr
+//     rail_slot_angle Neigung des Schlitzes, + = nach oben-aussen
+//   rail_reach (Bead-Mitte -> Huelse) wird daraus gerechnet, nicht gemessen.
+//
+//   Der Fuss bleibt ueber lip_out + neck_extra = 7.5 mm ab Bead-Mitte duenn
+//   und weitet sich erst danach auf. Bei rail_clear = 5 startet die
+//   Aufweitung 1 mm vor der Schiene, in freier Luft. Wird rail_clear kleiner
+//   als neck_extra, schlaegt ein assert an.
+//
+//   Die Neigung kippt nur Bead und Hals um die Bead-Mitte; die Fusswurzel an
+//   der Huelse bleibt waagerecht und das Rohr senkrecht.
 // =============================================================================
 
 // ---- Alu-Vierkantrohr (gemessen) --------------------------------------------
@@ -87,11 +103,22 @@ sleeve_r    = 2;     // Kantenradius aussen
 pin_d       = 5.4;   // M5 Durchgang im Druckteil (Rohr: 5.5 mm bohren)
 
 // ---- Vorhandene Wohnwagen-Kederschiene (Fuss schiebt hinein) ----------------
-rail_keder_d   = 7;    // ANNAHME Keder-Bead-Durchmesser der Schiene
-rail_slot_w    = 3;    // ANNAHME Schlitzbreite der Schiene
-rail_lip_depth = 4;    // ANNAHME Tiefe, ueber die der Hals duenn bleiben muss
-rail_depth     = 10;   // ANNAHME Bead-Mitte -> Wandflaeche
-rail_reach     = 12;   // Bead-Mitte -> Huelsen-Rueckseite (setzt den Wandabstand)
+rail_keder_d   = 9;    // GEMESSEN Keder-Bead-Durchmesser der Schiene
+rail_slot_w    = 5;    // GEMESSEN Schlitzbreite der Schiene
+rail_lip_depth = 2;    // GEMESSEN Lippendicke der Schiene:
+                       // Bead-AUSSENKANTE -> Schienen-Aussenflaeche (nicht ab Mitte!)
+neck_extra     = 1;    // Hals bleibt so viel laenger duenn als die Lippe dick ist,
+                       // damit die Aufweitung nicht an der Lippenkante klemmt
+rail_slot_angle = 10;  // GEMESSEN Neigung des Schienenschlitzes gegen die
+                       // Waagerechte. POSITIV = Schlitz oeffnet sich nach
+                       // OBEN-aussen, d.h. der Fuss laeuft von der Huelse aus
+                       // nach innen leicht abwaerts. Das Rohr bleibt senkrecht.
+rail_depth     = 10;   // GEMESSEN Bead-Mitte -> Wandflaeche
+rail_clear     = 5;    // GEMESSEN freie Luft zwischen Schienen-VORDERKANTE und
+                       // Rohr/Huelse. Das ist die real messbare Groesse; der
+                       // Wandabstand des Rohrs faellt daraus ab (s. Abgeleitet).
+                       // Muss > neck_extra sein, sonst weitet sich der Fuss
+                       // schon in der Schiene auf.
 rail_fit       = 0.4;  // Untermass von Bead und Hals
 foot_extra     = 0;    // Fusslaenge = Huelsenbreite + 2*foot_extra (s. Abgeleitet).
                        // Kurz halten! Die vorhandene Schiene ist am Anfang
@@ -101,7 +128,7 @@ foot_web_t     = 6;    // Stegdicke ausserhalb der Schiene
 foot_root_h    = 12;   // Steghoehe am Uebergang zur Huelse (Kerbentschaerfung)
 
 // ---- Tarp-Keder (C-Kanal oben) ----------------------------------------------
-tarp_keder_d      = 8;    // ANNAHME Tarp-Kederband-Durchmesser
+tarp_keder_d      = 9;    // GEMESSEN Tarp-Kederband-Durchmesser
 tarp_fit          = 0.6;  // Spiel im Kanal
 tarp_slot_w       = 4;    // Schlitzbreite (< Bead -> haelt)
 tarp_channel_wall = 3.5;  // Wandstaerke des Kanals
@@ -139,10 +166,34 @@ sleeve_half = sleeve_out / 2;
 front_y     =  sleeve_half;                  // Huelsen-Vorderseite (+Y)
 back_y      = -sleeve_half;                  // Huelsen-Rueckseite  (-Y, Wandseite)
 foot_len    = sleeve_out + 2 * foot_extra;   // Fuss nur so breit wie die Huelse
-y_bead      = back_y - rail_reach;           // Bead-Mitte in der vorhandenen Schiene
+// Bead-Mitte -> Schienen-Vorderkante: halber Bead plus Lippendicke.
+lip_out     = rail_keder_d / 2 + rail_lip_depth;
+// Bead-Mitte -> Huelsen-Rueckseite. Faellt aus dem gemessenen Freiraum ab.
+rail_reach  = lip_out + rail_clear;
+y_bead       = back_y - rail_reach;          // Bead-Mitte in der vorhandenen Schiene
+rail_front_y = y_bead + lip_out;             // Vorderkante der vorhandenen Schiene
+// Laenge ab Bead-MITTE, ueber die der Hals duenn bleiben muss. Erst danach
+// darf der Fuss aufgehen – sonst klemmt er an der Lippe.
+neck_len    = lip_out + neck_extra;
 wall_y      = y_bead - rail_depth;           // Wandflaeche
 ch_out      = tarp_keder_d + tarp_fit + 2 * tarp_channel_wall;  // Kanal aussen
 y_ch        = front_y + ch_out / 2;          // Kanalachse vor der Huelse
+
+// ---- Kontrollausgaben / Plausibilitaet (bei jedem Render im Log) -------------
+echo(str("Hals ", rail_slot_w - rail_fit, " x ", neck_len,
+         " mm, Schlitzneigung ", rail_slot_angle, " Grad"));
+echo(str("Freiraum Schienenvorderkante -> Huelse: ", rail_clear,
+         " mm  (darin weitet sich der Fuss von ", rail_slot_w - rail_fit,
+         " auf ", foot_root_h, " mm auf)"));
+echo(str("Bead-Mitte -> Huelse: ", rail_reach,
+         " mm, Huelsen-Rueckseite -> Wand: ", back_y - wall_y, " mm"));
+
+assert(rail_clear > neck_extra,
+       "rail_clear <= neck_extra: der Fuss wuerde sich schon in der Schiene aufweiten.");
+assert(rail_slot_w - rail_fit < rail_keder_d - rail_fit,
+       "Hals nicht schmaler als der Bead – der Fuss wuerde durch den Schlitz rutschen.");
+assert(rail_depth > rail_keder_d / 2,
+       "rail_depth zu klein: der Bead wuerde hinten aus der Schiene in die Wand ragen.");
 
 // =============================================================================
 // Hilfsmodule
@@ -180,14 +231,19 @@ module pin_hole(z = 0) {
 
 // Keder-Fuss: Bead in der vorhandenen Schiene, duenner Hals durch den Schlitz,
 // danach Verbreiterung zur Huelse.
+// Bead und Hals sind um rail_slot_angle um die BEAD-MITTE gekippt (der Schlitz
+// der Schiene steht schraeg); die Wurzel an der Huelse bleibt waagerecht, den
+// Versatz faengt der Uebergang auf. Der Bead selbst ist rund, die Drehung
+// wirkt sich nur auf Hals und Aufweitung aus.
 module foot_profile_2d() {
     neck = rail_slot_w - rail_fit;
     union() {
         translate([y_bead, 0]) circle(d = rail_keder_d - rail_fit);
-        translate([y_bead, -neck / 2]) square([rail_lip_depth, neck]);
+        translate([y_bead, 0]) rotate(rail_slot_angle)
+            translate([0, -neck / 2]) square([neck_len, neck]);
         hull() {
-            translate([y_bead + rail_lip_depth - eps, -neck / 2])
-                square([eps, neck]);
+            translate([y_bead, 0]) rotate(rail_slot_angle)
+                translate([neck_len - eps, -neck / 2]) square([eps, neck]);
             translate([back_y + sleeve_wall - eps, -foot_root_h / 2])
                 square([eps, foot_root_h]);
         }
@@ -298,10 +354,11 @@ module ghost_wall() {
 }
 
 // Grobe Andeutung der vorhandenen Kederschiene an der Wand bei z = 0.
+// Reicht bis rail_front_y, damit man im Preview den Spalt zur Huelse sieht.
 module ghost_rail() {
     color([0.6, 0.6, 0.6, 0.5])
         translate([-130, wall_y, -12])
-            cube([260, rail_depth + rail_keder_d / 2, 24]);
+            cube([260, rail_front_y - wall_y, 24]);
 }
 
 module assembly() {
