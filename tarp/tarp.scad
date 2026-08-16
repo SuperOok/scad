@@ -69,8 +69,8 @@
 // SCHIENENPROFIL (2026-08-02 am Wohnwagen abgenommen)
 // -----------------------------------------------------------------------------
 //   Bead 9, Schlitz 5, Lippe 2, Bead-Mitte -> Wand 10, Freiraum vor der
-//   Schiene 5. Tarp-Keder 9. Der Schlitz steht NICHT waagerecht, sondern
-//   oeffnet sich ~10 Grad nach oben-aussen (rail_slot_angle).
+//   Schiene 15. Tarp-Keder 9. Der Schlitz steht NICHT waagerecht, sondern
+//   oeffnet sich ~25 Grad nach oben-aussen (rail_slot_angle).
 //
 //   Alle Schienenmasse sind so definiert, dass sie direkt messbar sind:
 //     rail_keder_d   Innendurchmesser der runden Nut
@@ -82,9 +82,11 @@
 //   rail_reach (Bead-Mitte -> Huelse) wird daraus gerechnet, nicht gemessen.
 //
 //   Der Fuss bleibt ueber lip_out + neck_extra = 7.5 mm ab Bead-Mitte duenn
-//   und weitet sich erst danach auf. Bei rail_clear = 5 startet die
-//   Aufweitung 1 mm vor der Schiene, in freier Luft. Wird rail_clear kleiner
-//   als neck_extra, schlaegt ein assert an.
+//   und weitet sich erst danach auf – also 1 mm hinter der Lippe, in freier
+//   Luft, unabhaengig von rail_clear. Der Rest von rail_clear steht fuer die
+//   Aufweitung zur Verfuegung: bei 15 mm laeuft sie flach ueber 14 mm aus
+//   statt steil ueber 4 mm. Wird rail_clear kleiner als neck_extra, schlaegt
+//   ein assert an.
 //
 //   Die Neigung kippt nur Bead und Hals um die Bead-Mitte; die Fusswurzel an
 //   der Huelse bleibt waagerecht und das Rohr senkrecht.
@@ -97,6 +99,18 @@
 //   5-mm-Schlitz. Bead- und Halspassung sind deshalb getrennt (bead_fit /
 //   neck_fit), der Hals hat jetzt 0.5 mm mehr Luft im Durchmesser.
 //   Der Bead bleibt bewusst satt – er ist es, der die Last haelt.
+//
+//   Zwei Masse waren daneben:
+//     rail_slot_angle 10 -> 25 Grad. Der Schlitz steht deutlich steiler als
+//       beim ersten Abnehmen geschaetzt.
+//     rail_clear 5 -> 15 mm. Direkt neben der Kederschiene sitzt ein weiteres
+//       Befestigungsteil; das Rohr muss 1 cm weiter von der Schiene weg, um
+//       daran vorbeizukommen.
+//   Das Rohr steht damit 31.5 statt 21.5 mm von der Wand ab. Der Fuss traegt
+//   diese Strecke auf Zug (nicht auf Biegung), der Lastpfad bleibt also
+//   gutartig; das wall_pad ueberbrueckt entsprechend mehr, seine Rippe steht
+//   dabei unter Druck. Beides unkritisch, aber beim naechsten Anprobieren die
+//   Rippe im Blick behalten.
 // =============================================================================
 
 // ---- Alu-Vierkantrohr (gemessen) --------------------------------------------
@@ -118,16 +132,19 @@ rail_lip_depth = 2;    // GEMESSEN Lippendicke der Schiene:
                        // Bead-AUSSENKANTE -> Schienen-Aussenflaeche (nicht ab Mitte!)
 neck_extra     = 1;    // Hals bleibt so viel laenger duenn als die Lippe dick ist,
                        // damit die Aufweitung nicht an der Lippenkante klemmt
-rail_slot_angle = 10;  // GEMESSEN Neigung des Schienenschlitzes gegen die
+rail_slot_angle = 25;  // GEMESSEN Neigung des Schienenschlitzes gegen die
                        // Waagerechte. POSITIV = Schlitz oeffnet sich nach
                        // OBEN-aussen, d.h. der Fuss laeuft von der Huelse aus
                        // nach innen leicht abwaerts. Das Rohr bleibt senkrecht.
 rail_depth     = 10;   // GEMESSEN Bead-Mitte -> Wandflaeche
-rail_clear     = 5;    // GEMESSEN freie Luft zwischen Schienen-VORDERKANTE und
+rail_clear     = 15;   // GEMESSEN freie Luft zwischen Schienen-VORDERKANTE und
                        // Rohr/Huelse. Das ist die real messbare Groesse; der
                        // Wandabstand des Rohrs faellt daraus ab (s. Abgeleitet).
                        // Muss > neck_extra sein, sonst weitet sich der Fuss
                        // schon in der Schiene auf.
+                       // PROBEDRUCK 2026-08-16: von 5 auf 15 erhoeht – direkt
+                       // neben der Kederschiene sitzt ein weiteres Befestigungs-
+                       // teil, an dem das Rohr vorbei muss.
 bead_fit       = 0.4;  // Untermass des Beads in der runden Nut
 neck_fit       = 0.9;  // Untermass des Halses im Schlitz. PROBEDRUCK 2026-08-16:
                        // mit 0.4 (= wie der Bead) klemmte der Fuss beim
