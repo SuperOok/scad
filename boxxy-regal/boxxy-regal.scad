@@ -11,6 +11,7 @@
 //
 //   frame   – umlaufender Rahmen aus einem rim_w breiten Streifen, mit
 //             niedriger Aussenwand (wall_h) und Querrippen gegen Verwinden.
+//             Die Aussenkante ist unten umlaufend mit bottom_r verrundet.
 //             Die beiden vorderen Ecken fehlen; dort werden Segmente gesteckt.
 //   corners – die Ecksegmente in mehreren Radien (corner_radii), je links und
 //             rechts, mit aufgepraegter Radius-Zahl.
@@ -41,9 +42,31 @@
 //   Streifen Tape ueber die Fuge.
 //
 // -----------------------------------------------------------------------------
+// UNTERE KANTE (bottom_r)
+// -----------------------------------------------------------------------------
+//   Die Aussenkante ist unten umlaufend mit bottom_r = 5 verrundet, damit die
+//   Lehre ueber eine Hohlkehle am Uebergang Boden/Seitenwand des Regals kommt.
+//   Oberhalb von z = bottom_r ist die Kontur exakt shelf_x x shelf_y, gemessen
+//   wird also nur dort.
+//
+//   ACHTUNG, das ist ein Ueberhang: bei z = 0 liegt die Kontur 5 mm weiter
+//   innen als oben, und die Flanke laeuft unten waagerecht aus. Von z = 0 auf
+//   z = 0,04 wandert sie schon 0,65 mm nach aussen – die ersten rund 1 mm
+//   drucken ohne Stuetze nicht sauber. Drei Auswege:
+//     bottom_steps = 1  -> gerade 45-Grad-Fase statt Bogen, stuetzfrei
+//     bottom_r kleiner  -> weniger Ueberhang
+//     mit Stuetzen      -> saubere Form, aber Stuetzspuren genau auf der
+//                          Flaeche, mit der eingepasst wird
+//   Nebenwirkung der Verrundung: zwischen z = 2 und z = 3 bleibt von der
+//   1,6 mm dicken Wand nur 0,6 .. 1,2 mm stehen. Sie sitzt dort auf der
+//   vollen Grundplatte und druckt als eine Perimeterbahn – fuer eine Lehre
+//   unkritisch, aber nicht belastbar.
+//
+// -----------------------------------------------------------------------------
 // DRUCKEN
 // -----------------------------------------------------------------------------
-//   Alles flach auf dem Bett, keine Stuetzen, kein Ueberhang.
+//   Alles flach auf dem Bett; bis auf die Verrundung unten (siehe oben) gibt
+//   es keine Ueberhaenge.
 //   Der Rahmen ist 420 x 77 gross und passt auf ein 360er Bett nur DIAGONAL:
 //   um 45 Grad gedreht ist die Bounding-Box (420 + 77) / sqrt(2) = 351,4 mm.
 //   Das ist knapp – ohne Brim, und den Rand im Slicer kontrollieren.
@@ -66,6 +89,10 @@ base_t  = 2.0;      // Dicke der Grundplatte
 wall_t  = 1.6;      // Dicke der Aussenwand
 wall_h  = 12;       // Hoehe der Aussenwand (ab z = 0)
 fit_gap = 0;        // Untermass je Seite, 0 = Nennmass messen
+
+/* [Untere Kante] */
+bottom_r     = 5;   // Radius der umlaufenden Verrundung unten aussen
+bottom_steps = 12;  // Segmente des Bogens; 1 ergibt eine 45-Grad-Fase
 
 /* [Ecksegmente] */
 corner_cut   = 50;          // Kantenlaenge des herausgetrennten Eckquadrats
@@ -98,6 +125,10 @@ cut_y = gy - corner_cut;                // Trennebene senkrecht zu Y (nur L-Schn
 band_c = wall_t + (rim_w - wall_t) / 2; // Mitte des Streifens ohne Wand, von aussen
 rib_x = cut_x - tongue_l - 3 - rib_w / 2;   // Rippe direkt hinter der Steckstelle
 
+assert(bottom_r < rim_w,  "bottom_r muss kleiner als rim_w sein");
+assert(bottom_r <= wall_h, "bottom_r darf die Wand nicht ueberragen");
+assert(bottom_r < min(corner_radii), "bottom_r muss kleiner als der kleinste Eckradius sein");
+
 // Fussabdruck eines Segments (fuer die flache Anordnung)
 seg_y0 = end_caps ? 0 : cut_y - tongue_l;
 seg_w  = corner_cut + tongue_l;
@@ -127,9 +158,37 @@ module ring_2d(r, w) {
 }
 
 // Vollstaendige Lehre (noch ungetrennt): Grundplatte + Aussenwand.
-module gauge_solid(r) {
+// Die untere Aussenkante ist hier noch scharf, die macht outer_envelope().
+module gauge_body(r) {
     linear_extrude(base_t) ring_2d(r, rim_w);
     linear_extrude(wall_h) ring_2d(r, wall_t);
+}
+
+// Huellkoerper: volle Grundflaeche, unten aussen umlaufend mit bottom_r
+// verrundet. Alles, was zur Lehre gehoert, wird damit verschnitten – so
+// bekommen Rahmen, Rippen und Ecksegmente denselben Rand, ohne dass die
+// Trennebenen der Steckverbindung angetastet werden.
+//
+// Bogen in der Ebene (u = Abstand nach aussen, z), Mittelpunkt (-bottom_r,
+// bottom_r), Radius bottom_r:  u(b) = R (cos b - 1),  z(b) = R (1 + sin b),
+// b von -90 (unten, R nach innen) bis 0 (Endkontur erreicht).
+// Zwischen zwei Bogenpunkten wird gehullt, die Flanke ist also ein gerader
+// Kegelstumpf – bei bottom_steps = 1 genau eine 45-Grad-Fase.
+module outer_envelope(r) {
+    for (i = [0 : bottom_steps - 1]) {
+        b0 = -90 + 90 * i / bottom_steps;
+        b1 = -90 + 90 * (i + 1) / bottom_steps;
+        hull() {
+            translate([0, 0, bottom_r * (1 + sin(b0))])
+                linear_extrude(0.01)
+                    offset(delta = bottom_r * (cos(b0) - 1)) outline_2d(r);
+            translate([0, 0, bottom_r * (1 + sin(b1))])
+                linear_extrude(0.01)
+                    offset(delta = bottom_r * (cos(b1) - 1)) outline_2d(r);
+        }
+    }
+    translate([0, 0, bottom_r])
+        linear_extrude(wall_h - bottom_r + 1) outline_2d(r);
 }
 
 // -----------------------------------------------------------------------------
@@ -181,15 +240,20 @@ module ribs() {
 }
 
 module frame_part() {
-    difference() {
-        union() {
-            gauge_solid(corner_r);
-            ribs();
+    intersection() {
+        // corner_r ist hier beliebig: die Bogenstuecke liegen komplett in den
+        // herausgetrennten Ecken.
+        outer_envelope(corner_r);
+        difference() {
+            union() {
+                gauge_body(corner_r);
+                ribs();
+            }
+            corner_box(1);
+            corner_box(-1);
+            at_joints(1)  slot_solid();
+            at_joints(-1) slot_solid();
         }
-        corner_box(1);
-        corner_box(-1);
-        at_joints(1)  slot_solid();
-        at_joints(-1) slot_solid();
     }
 }
 
@@ -206,11 +270,16 @@ module corner_label(r, s) {
 
 module corner_piece(r, s) {
     intersection() {
-        gauge_solid(r);
-        corner_box(s);
+        outer_envelope(r);
+        union() {
+            intersection() {
+                gauge_body(r);
+                corner_box(s);
+            }
+            at_joints(s) tongue_solid();
+            corner_label(r, s);
+        }
     }
-    at_joints(s) tongue_solid();
-    corner_label(r, s);
 }
 
 // Ein Segment in den ersten Quadranten geschoben, Ecke auf (0, 0).

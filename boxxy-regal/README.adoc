@@ -20,14 +20,40 @@ Die beiden hinteren Ecken sind als scharfkantig angenommen.
 
 `boxxy-regal-frame.3mf`:: Umlaufender Rahmen, 10 mm breiter Streifen, 2 mm
 dick, mit 12 mm hoher Außenwand und fünf Querrippen. Die beiden vorderen Ecken
-fehlen – dort werden Segmente eingesteckt. ~40 g.
+fehlen – dort werden Segmente eingesteckt. ~35 g.
 
 `boxxy-regal-corners.3mf`:: Sechs Ecksegmente: Radius 25 / 30 / 35 mm, je links
-und rechts, mit aufgeprägter Radius-Zahl. Zusammen ~24 g.
+und rechts, mit aufgeprägter Radius-Zahl. Zusammen ~20 g.
+
+== Untere Kante
+
+Die Außenkante ist unten umlaufend mit `bottom_r` = 5 mm verrundet, damit die
+Lehre über eine Hohlkehle am Übergang Boden/Seitenwand des Regals kommt.
+Oberhalb von z = 5 mm ist die Kontur exakt 420 × 77 – gemessen wird nur dort.
+
+WARNING: Das ist ein Überhang. Bei z = 0 liegt die Kontur 5 mm weiter innen als
+oben, und die Flanke läuft unten waagerecht aus: von z = 0 auf z = 0,04 wandert
+sie bereits 0,65 mm nach außen. Die ersten rund 1 mm drucken ohne Stützen nicht
+sauber.
+
+Drei Auswege:
+
+[cols="1,3"]
+|===
+| `bottom_steps = 1` | Gerade 45°-Fase statt Bogen – stützfrei, gleiche Tiefe
+| `bottom_r` kleiner | Weniger Überhang, dafür weniger Freigang
+| Mit Stützen        | Saubere Form, aber Stützspuren genau auf der Fläche, mit der eingepasst wird
+|===
+
+Nebenwirkung der Verrundung: zwischen z = 2 und z = 3 bleibt von der 1,6 mm
+dicken Wand nur 0,6 … 1,2 mm stehen. Sie sitzt dort auf der vollen Grundplatte
+und druckt als eine Perimeterbahn – für eine Lehre unkritisch, aber nicht
+belastbar.
 
 == Drucken
 
-Alles flach auf dem Bett, keine Stützen, keine Überhänge.
+Alles flach auf dem Bett; bis auf die Verrundung unten (siehe oben) gibt es
+keine Überhänge.
 
 CAUTION: Der Rahmen ist 420 × 77 mm und passt auf ein 360er Bett nur
 **diagonal**: um 45° gedreht ist die Bounding-Box **351,4 mm** – ohne Brim, und
