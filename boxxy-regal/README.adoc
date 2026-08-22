@@ -1,0 +1,63 @@
+= boxxy-regal – Passlehre für den Türregal-Einsatz
+
+Erster Schritt zum Einsatz für das rechteckige Türregal: eine materialarme
+Lehre, um die Maße am Objekt zu prüfen, bevor das eigentliche Teil entsteht.
+
+== Angenommene Maße
+
+[cols="1,1,3"]
+|===
+| Parameter | Wert | Bedeutung
+
+| `shelf_x`  | 420 mm | Länge (X)
+| `shelf_y`  | 77 mm  | Tiefe (Y), `y = 0` hinten an der Tür
+| `corner_r` | 30 mm  | Nennradius der beiden *vorderen* Ecken (+Y)
+|===
+
+Die beiden hinteren Ecken sind als scharfkantig angenommen.
+
+== Teile
+
+`boxxy-regal-frame.3mf`:: Umlaufender Rahmen, 10 mm breiter Streifen, 2 mm
+dick, mit 12 mm hoher Außenwand und fünf Querrippen. Die beiden vorderen Ecken
+fehlen – dort werden Segmente eingesteckt. ~40 g.
+
+`boxxy-regal-corners.3mf`:: Sechs Ecksegmente: Radius 25 / 30 / 35 mm, je links
+und rechts, mit aufgeprägter Radius-Zahl. Zusammen ~24 g.
+
+== Drucken
+
+Alles flach auf dem Bett, keine Stützen, keine Überhänge.
+
+CAUTION: Der Rahmen ist 420 × 77 mm und passt auf ein 360er Bett nur
+**diagonal**: um 45° gedreht ist die Bounding-Box **351,4 mm** – ohne Brim, und
+den Rand im Slicer kontrollieren. Reicht das nicht, `end_caps = true` setzen:
+dann laufen die Trennebenen über die volle Tiefe durch, aus den Ecksegmenten
+werden Endkappen und der Rahmen schrumpft auf 320 × 77 mm.
+
+[source,bash]
+----
+./export-boxxy-regal.sh              # beide Teile
+./export-boxxy-regal.sh frame        # nur den Rahmen
+----
+
+== Messen
+
+. Rahmen einlegen, ohne Segmente: prüft Tiefe und die hintere Kante.
+. Segmente einstecken (Feder in den Schlitz schieben) und mit dem Radius
+  anfangen, der am ehesten passt. Tauschen, bis die Ecke satt anliegt.
+. Umlaufende Wand: stößt sie irgendwo an, ist dort die nutzbare Höhe kleiner
+  als 12 mm – Stelle notieren.
+. Ergebnis in `boxxy-regal.scad` eintragen (`shelf_x`, `shelf_y`, `corner_r`)
+  und erst dann den eigentlichen Einsatz konstruieren.
+
+== Steckverbindung
+
+Die Segmente sitzen mit einer Feder *in der Ebene der Grundplatte* in einem
+Schlitz des Rahmens (Presssitz, `joint_gap = 0,15` mm je Seite). Bewusst kein
+Stufenfalz: der wäre auf einer der beiden Seiten eine 12 mm lange Brücke in der
+Luft und ohne Stützen nicht druckbar.
+
+Folge: die Verbindung ist in X/Y und gegen Verdrehen fixiert, aber nicht gegen
+Abheben. Der Presssitz hält normalerweise; sonst einen Streifen Tape über die
+Fuge.
