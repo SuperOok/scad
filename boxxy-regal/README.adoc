@@ -223,6 +223,36 @@ Leere Löcher schaden nicht, fehlende schon — beim Einkleben entscheidest du, 
 du 2 oder 4 je Zelle bestückst. `magnets_per_cell = 2` lässt nur die Diagonale
 stehen, `0` gar keine.
 
+=== Boxen
+
+Im Unterordner `gridfinity/` liegen mit dem Generator erzeugte Boxen
+(gridfinity-rebuilt, binäre STL — nicht aus diesem Repo generierbar):
+
+[cols="2,1,1,1"]
+|===
+| Datei | Grundfläche | Höhe | Oberkante über Regalboden
+
+| `…bin-1x1x14…` | 41,5 × 41,5 | 101,6 mm | 104,8 mm
+| `…bin-2x1x14…` | 41,5 × 83,5 | 101,6 mm | 104,8 mm
+| `…bin-2x2x14…` | 83,5 × 83,5 | 101,6 mm | 104,8 mm
+| `…bin-2x2x16…` | 83,5 × 83,5 | 115,6 mm | 118,8 mm
+|===
+
+Die Oberkante liegt 3,2 mm über der Plattenunterseite, weil der Boxensockel
+4,75 mm tief in die Tasche einsinkt.
+
+WARNING: Die lichte Höhe des Regalbodens ist nie gemessen worden. Diese Boxen
+brauchen 105 bzw. 119 mm — vor dem Druck nachmessen.
+
+In die 9 × 2 Zellen passen z. B. vier 2 × 2-Boxen plus eine Restspalte.
+
+Passtest gegen die echten Dateien (nicht gegen einen Nachbau): die 1 × 1 geht
+kollisionsfrei in ihre Tasche. Die 2 × 2 liefert bei exakter Auflage einen
+0,37 mm³ großen Rest in einer 0,01 mm dünnen Schicht bei z = 7,94…7,95 — das
+ist die messerscharfe Stegkante, die den Boxenkörper koplanar berührt. Um
+0,02 mm angehoben ist die Verschneidung leer, also Kontakt und keine
+Überschneidung.
+
 == Historie
 
 Die Passlehre, mit der diese Maße ermittelt wurden – Rahmen, steckbare
