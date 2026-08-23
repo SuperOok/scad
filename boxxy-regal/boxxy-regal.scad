@@ -101,42 +101,11 @@ assert(bottom_r <= wall_h,  "bottom_r darf die Bordwand nicht ueberragen");
 assert(corner_r < gy,       "corner_r muss kleiner als die Tiefe sein");
 assert(floor_t < wall_h,    "floor_t muss unter der Bordwandhoehe liegen");
 
-// Stuetzstellen des Bogens, genau wie outer_envelope() ihn baut.
-function band_z(i)  = bottom_r * (1 + sin(-90 + 90 * i / bottom_steps));
-function band_in(i) = bottom_r * (1 - cos(-90 + 90 * i / bottom_steps));
+// Die Aussenform steckt in boxxy-regal-shell.scad, damit Wanne und
+// Gridfinity-Baseplate dieselbe benutzen.
+use <boxxy-regal-shell.scad>
 
-// Einzug der unteren Flanke auf Hoehe z. Zwischen zwei Stuetzstellen ist die
-// Flanke gerade (hull), also linear interpoliert.
-function inset_at(z, i = 0) =
-      z >= bottom_r      ? 0
-    : band_z(i + 1) >= z ? band_in(i) + (band_in(i + 1) - band_in(i))
-                                      * (z - band_z(i))
-                                      / (band_z(i + 1) - band_z(i))
-    : inset_at(z, i + 1);
-
-// Wenn die Flanke auf Hoehe der Bodenoberkante tiefer einzieht als die
-// Bordwand dick ist, haengt die Wand frei und das Teil zerfaellt in zwei
-// Koerper. Passiert z. B. bei bottom_steps = 1.
-wall_left = wall_t - inset_at(floor_t);
-assert(wall_left >= 0.4, str(
-    "Die untere Verrundung kappt die Bordwand am Boden – dort blieben nur ",
-    wall_left, " mm stehen. Abhilfe: bottom_steps erhoehen (>= 4), ",
-    "bottom_r verkleinern, wall_t vergroessern oder floor_t erhoehen."));
-
-// -----------------------------------------------------------------------------
-// 2D-Grundformen
-// -----------------------------------------------------------------------------
-
-// Aussenkontur: vorne (+Y) mit Radius r verrundet, hinten scharfkantig.
-module outline_2d(r) {
-    hx = gx / 2;
-    union() {
-        translate([-hx, 0])          square([gx, gy - r]);
-        translate([-hx + r, 0])      square([gx - 2 * r, gy]);
-        translate([-hx + r, gy - r]) circle(r = r);
-        translate([ hx - r, gy - r]) circle(r = r);
-    }
-}
+module outline_2d(r) { shell_outline_2d(gx, gy, r); }
 
 // Umlaufender Streifen der Breite w entlang der Aussenkontur.
 module ring_2d(r, w) {
@@ -146,34 +115,18 @@ module ring_2d(r, w) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// Verrundung der unteren Aussenkante
-// -----------------------------------------------------------------------------
-// Huellkoerper: volle Grundflaeche, unten aussen umlaufend mit bottom_r
-// verrundet. Die Wanne wird damit verschnitten, statt jede Kante einzeln zu
-// verrunden.
-//
-// Bogen in der Ebene (u = Abstand nach aussen, z), Mittelpunkt (-bottom_r,
-// bottom_r), Radius bottom_r:  u(b) = R (cos b - 1),  z(b) = R (1 + sin b),
-// b von -90 (unten, R nach innen) bis 0 (Endkontur erreicht).
-// Zwischen zwei Bogenpunkten wird gehullt, die Flanke ist also ein gerader
-// Kegelstumpf – bei bottom_steps = 1 genau eine 45-Grad-Fase.
 module outer_envelope(r) {
-    for (i = [0 : bottom_steps - 1]) {
-        b0 = -90 + 90 * i / bottom_steps;
-        b1 = -90 + 90 * (i + 1) / bottom_steps;
-        hull() {
-            translate([0, 0, bottom_r * (1 + sin(b0))])
-                linear_extrude(0.01)
-                    offset(delta = bottom_r * (cos(b0) - 1)) outline_2d(r);
-            translate([0, 0, bottom_r * (1 + sin(b1))])
-                linear_extrude(0.01)
-                    offset(delta = bottom_r * (cos(b1) - 1)) outline_2d(r);
-        }
-    }
-    translate([0, 0, bottom_r])
-        linear_extrude(wall_h - bottom_r + 1) outline_2d(r);
+    shell_envelope(gx, gy, r, wall_h, bottom_r, bottom_steps);
 }
+
+// Wenn die Flanke auf Hoehe der Bodenoberkante tiefer einzieht als die
+// Bordwand dick ist, haengt die Wand frei und das Teil zerfaellt in zwei
+// Koerper. Passiert z. B. bei bottom_steps = 1.
+wall_left = wall_t - shell_inset_at(floor_t, bottom_r, bottom_steps);
+assert(wall_left >= 0.4, str(
+    "Die untere Verrundung kappt die Bordwand am Boden - dort blieben nur ",
+    wall_left, " mm stehen. Abhilfe: bottom_steps erhoehen (>= 4), ",
+    "bottom_r verkleinern, wall_t vergroessern oder floor_t erhoehen."));
 
 // -----------------------------------------------------------------------------
 // Einsatz

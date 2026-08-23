@@ -27,13 +27,17 @@ deutlich steifer als der offene Rahmen und kann sich nicht wegbiegen – dann
 
 == Teile
 
-`boxxy-regal-77.3mf`:: 420 × 77 × 12, ~82 g
-`boxxy-regal-87.3mf`:: 420 × 87 × 12, ~90 g
+`boxxy-regal-77.3mf`:: Wanne 420 × 77 × 12, ~82 g
+`boxxy-regal-87.3mf`:: Wanne 420 × 87 × 12, ~90 g
+`boxxy-regal-gridfinity.3mf`:: Gridfinity-Baseplate 420 × 87 × 7,95, ~150 g ASA
+
+Die Außenform aller drei steckt in `boxxy-regal-shell.scad`.
 
 [source,bash]
 ----
-./export-boxxy-regal.sh          # beide Tiefen
-./export-boxxy-regal.sh 77       # nur eine
+./export-boxxy-regal.sh              # alles
+./export-boxxy-regal.sh 77           # nur eine Wanne
+./export-boxxy-regal.sh gridfinity   # nur die Baseplate
 ----
 
 == Drucken
@@ -165,6 +169,59 @@ die Schwund-Kompensation (Shrinkage compensation XY) aktiv ist. Wenn die
 Passlehre in PLA gedruckt war und die Kompensation aus ist, muss `fit_gap`
 negativ gesetzt werden – nicht im Slicer skalieren, sonst wandern `corner_r`
 und `wall_h` mit.
+
+== Gridfinity-Baseplate
+
+Ersetzt in einem 87er Boden die Wanne. Die Boxen selbst kommen aus einem
+Generator — hier entsteht nur die Platte. Außenform identisch zur Wanne, also
+dieselbe Bounding-Box (346,1 mm bei 45°, 7,0 mm Rand) und dieselbe R5-Kante
+unten. Gesamthöhe 7,95 mm = 3,2 mm Boden + 4,75 mm Sockel.
+
+=== Warum 9 × 2 und nicht 10 × 2
+
+420 = 10 × 42 geht exakt auf, 87 nimmt zwei Reihen (84 mm) mit 3 mm Rest.
+Rechnerisch wären das 20 Zellen — die beiden vorderen Eckzellen fallen aber der
+R30-Verrundung zum Opfer. Sie beginnt bei y = 87 − 30 = 57; auf der Rasterkante
+y = 84 reicht das Regal nur bis
+
+ x = 180 + sqrt(30² − 27²) = 193,1 mm
+
+Die nächste Rasterkante darunter liegt bei 168, die vordere Reihe kann also nur
+8 Spalten breit sein. Es bleiben zwei Layouts mit je 18 Zellen: 10 hinten /
+8 vorne, oder 9 × 2 mittig. Gewählt ist 9 × 2 — sauberes Rechteck, umlaufender
+Rand, größte mögliche Box 2 × 9 (83,5 × 377,5 mm). Der Abstand der äußeren
+vorderen Sockelecke zur Verrundung beträgt damit 0,995 mm.
+
+Die je 21 mm an den Enden sind als flache Mulden ausgespart (`end_well`) — das
+spart Material und gibt zwei Ablagen.
+
+=== Maße aus der Spezifikation
+
+[cols="1,2"]
+|===
+| Raster        | 42 × 42 mm
+| Sockelprofil  | von unten 0,8 mm 45° → 1,8 mm senkrecht → 2,15 mm 45°, gesamt 4,75 mm
+| Eckradius     | 4,0 mm an der Baseplate (die Box hat 3,75 bei 41,5 mm)
+| Spiel         | 0,25 mm je Seite, ergibt sich aus 42 − 41,5
+| Magnetloch    | Ø 6,5 × 2,4 mm, bei ±13 mm ab Zellmitte
+|===
+
+Die ±13 mm sind nicht direkt dokumentiert, sondern hergeleitet: Sockel-Unterseite
+41,5 − 2 · 2,95 = 35,6 mm, das Loch liegt 4,8 mm von deren Kante → 17,8 − 4,8 =
+13,0 mm. Das deckt sich mit dem bekannten 26-mm-Lochabstand.
+
+Geprüft ist das gegen einen unabhängig aus den *Box*-Maßen aufgebauten Sockel:
+er geht kollisionsfrei in die Tasche, und um 0,3 mm aufgeblasen kollidiert er —
+das Spiel liegt also tatsächlich bei 0,25 mm je Seite und nicht irgendwo daneben.
+
+=== Magnete
+
+72 Löcher, 4 je Zelle. Die Taschen öffnen nach *oben* in den Sockelboden: Magnet
+bündig einkleben, dann liegt er direkt an dem der Box an.
+
+Leere Löcher schaden nicht, fehlende schon — beim Einkleben entscheidest du, ob
+du 2 oder 4 je Zelle bestückst. `magnets_per_cell = 2` lässt nur die Diagonale
+stehen, `0` gar keine.
 
 == Historie
 
