@@ -1,26 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Exportiert die druckbaren Teile der Passlehre:
-#   boxxy-regal-frame.3mf    – Rahmen 420 x 77 (im Slicer um 45 Grad drehen!)
-#   boxxy-regal-corners.3mf  – die Ecksegmente in allen Radien, links + rechts
-#   boxxy-regal-sticks-x.3mf – Teststaebchen fuer die Laenge (ebenfalls 45 Grad)
-#   boxxy-regal-sticks-y.3mf – Teststaebchen fuer die Tiefe
+# Exportiert den Einsatz in beiden Tiefen:
+#   boxxy-regal-77.3mf – 420 x 77
+#   boxxy-regal-87.3mf – 420 x 87
+#
+# Beide muessen im Slicer um 45 Grad gedreht werden, siehe README.
 #
 # Aufruf:
-#   ./export-boxxy-regal.sh              # alle Teile
-#   ./export-boxxy-regal.sh frame        # nur den Rahmen
-#   ./export-boxxy-regal.sh sticks-x sticks-y
+#   ./export-boxxy-regal.sh          # beide Tiefen
+#   ./export-boxxy-regal.sh 77       # nur eine
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 cd "$script_dir"
 
-parts=("$@")
-[[ ${#parts[@]} -gt 0 ]] || parts=(frame corners sticks-x sticks-y)
+depths=("$@")
+[[ ${#depths[@]} -gt 0 ]] || depths=(77 87)
 
-for part in "${parts[@]}"; do
-    echo ">>> $part"
+for depth in "${depths[@]}"; do
+    echo ">>> Tiefe $depth"
     "$repo_root/export.sh" "$script_dir/boxxy-regal.scad" \
-        "$script_dir/boxxy-regal-$part.3mf" -D "part=\"$part\""
+        "$script_dir/boxxy-regal-$depth.3mf" -D "shelf_y=$depth"
 done

@@ -1,124 +1,84 @@
-= boxxy-regal – Passlehre für den Türregal-Einsatz
+= boxxy-regal – Einsatz für das Türregal
 
-Erster Schritt zum Einsatz für das rechteckige Türregal: eine materialarme
-Lehre, um die Maße am Objekt zu prüfen, bevor das eigentliche Teil entsteht.
+Wanne mit durchgehendem dünnem Boden und umlaufender Bordwand.
 
-== Angenommene Maße
+== Maße
+
+Alle mit der Passlehre am Objekt geprüft:
 
 [cols="1,1,3"]
 |===
-| Parameter | Wert | Bedeutung
+| Parameter | Wert | Status
 
-| `shelf_x`  | 420 mm | Länge (X)
-| `shelf_y`  | 77 mm  | Tiefe (Y), `y = 0` hinten an der Tür
-| `corner_r` | 30 mm  | Nennradius der beiden *vorderen* Ecken (+Y)
+| `shelf_x`  | 420 mm      | genau richtig, keine Zugabe nötig
+| `shelf_y`  | 77 / 87 mm  | zwei Varianten
+| `corner_r` | 30 mm       | bestätigt, nur die beiden vorderen Ecken (+Y)
+| `wall_h`   | 12 mm       | bestätigt
+| `floor_t`  | 1,6 mm      | durchgehender Boden
+| `wall_t`   | 2,0 mm      | siehe unten
 |===
 
-Die beiden hinteren Ecken sind als scharfkantig angenommen.
+Die hinteren Ecken (an der Tür) sind scharfkantig.
+
+`fit_gap` steht auf 0: die gedruckte 420er Lehre ging ohne Kraft hinein, also
+geht es der gleich gedruckte Einsatz auch. Klemmt er doch – die Wanne ist
+deutlich steifer als der offene Rahmen und kann sich nicht wegbiegen – dann
+`fit_gap = 0.3` setzen, das gibt 0,6 mm Gesamtluft.
 
 == Teile
 
-`boxxy-regal-frame.3mf`:: Umlaufender Rahmen, 10 mm breiter Streifen, 2 mm
-dick, mit 12 mm hoher Außenwand und fünf Querrippen. Die beiden vorderen Ecken
-fehlen – dort werden Segmente eingesteckt. ~35 g.
-
-`boxxy-regal-corners.3mf`:: Sechs Ecksegmente: Radius 25 / 30 / 35 mm, je links
-und rechts, mit aufgeprägter Radius-Zahl. Zusammen ~20 g.
-
-`boxxy-regal-sticks-x.3mf`:: Fünf Teststäbchen für die **Länge**: 414, 416,
-418, 420, 422 mm, jedes mit seinem Maß beschriftet. ~59 g.
-
-`boxxy-regal-sticks-y.3mf`:: Dieselben fünf Abstufungen für die **Tiefe**: 71,
-73, 75, 77, 79 mm. ~16 g.
-
-Die Abstufungen stehen als `stick_deltas = [-6, -4, -2, 0, 2]` im `.scad`. Wer
-Material sparen will, kürzt die Liste; wer feiner messen will, nimmt 1er
-Schritte.
-
-== Stäbchen
-
-Rahmen und Stäbchen ergänzen sich: der Rahmen sagt „passt / passt nicht", die
-Stäbchen sagen, um wie viel – und sie trennen Länge und Tiefe, die im Rahmen
-zwangsläufig gleichzeitig anliegen.
-
-Jedes Stäbchen ist ein 8 × 2,5 mm Steg mit einem 12 mm hohen Klotz an jedem
-Ende. Gemessen wird mit den beiden äußeren Stirnflächen. Die Klötze sind unten
-außen mit demselben `bottom_r` = 5 mm freigestellt wie der Rahmen: beide Lehren
-tasten die Wand dadurch im selben Höhenband an (ab z = 5 mm) und nicht in einer
-Hohlkehle am Boden – sonst läse das flach liegende Stäbchen zu kurz.
-
-TIP: Nicht drücken. Das längste Stäbchen, das sich ohne Kraft hineinlegen
-lässt, ist die Antwort. Ein 42 cm langer Steg biegt sich unter Druck und
-„passt" dann auch, wenn er zu lang ist.
-
-Auch `sticks-x` muss um 45° gedreht werden (Platte 422 × 56, diagonal 338 mm –
-das passt mit Rand).
-
-NOTE: `export.sh` schreibt ein einziges Objekt mit mehreren Volumina. Zum
-freien Anordnen im Slicer erst „In Objekte aufteilen" / „Split to objects".
-
-== Untere Kante
-
-Die Außenkante ist unten umlaufend mit `bottom_r` = 5 mm verrundet, damit die
-Lehre über eine Hohlkehle am Übergang Boden/Seitenwand des Regals kommt.
-Oberhalb von z = 5 mm ist die Kontur exakt 420 × 77 – gemessen wird nur dort.
-
-WARNING: Das ist ein Überhang. Bei z = 0 liegt die Kontur 5 mm weiter innen als
-oben, und die Flanke läuft unten waagerecht aus: von z = 0 auf z = 0,04 wandert
-sie bereits 0,65 mm nach außen. Die ersten rund 1 mm drucken ohne Stützen nicht
-sauber.
-
-Drei Auswege:
-
-[cols="1,3"]
-|===
-| `bottom_steps = 1` | Gerade 45°-Fase statt Bogen – stützfrei, gleiche Tiefe
-| `bottom_r` kleiner | Weniger Überhang, dafür weniger Freigang
-| Mit Stützen        | Saubere Form, aber Stützspuren genau auf der Fläche, mit der eingepasst wird
-|===
-
-Nebenwirkung der Verrundung: zwischen z = 2 und z = 3 bleibt von der 1,6 mm
-dicken Wand nur 0,6 … 1,2 mm stehen. Sie sitzt dort auf der vollen Grundplatte
-und druckt als eine Perimeterbahn – für eine Lehre unkritisch, aber nicht
-belastbar.
-
-== Drucken
-
-Alles flach auf dem Bett; bis auf die Verrundung unten (siehe oben) gibt es
-keine Überhänge.
-
-CAUTION: Der Rahmen ist 420 × 77 mm und passt auf ein 360er Bett nur
-**diagonal**: um 45° gedreht ist die Bounding-Box **351,4 mm** – ohne Brim, und
-den Rand im Slicer kontrollieren. Reicht das nicht, `end_caps = true` setzen:
-dann laufen die Trennebenen über die volle Tiefe durch, aus den Ecksegmenten
-werden Endkappen und der Rahmen schrumpft auf 320 × 77 mm.
+`boxxy-regal-77.3mf`:: 420 × 77 × 12, ~82 g
+`boxxy-regal-87.3mf`:: 420 × 87 × 12, ~90 g
 
 [source,bash]
 ----
-./export-boxxy-regal.sh              # alle Teile
-./export-boxxy-regal.sh frame        # nur den Rahmen
+./export-boxxy-regal.sh          # beide Tiefen
+./export-boxxy-regal.sh 77       # nur eine
 ----
 
-== Messen
+== Drucken
 
-. Stäbchen zuerst: Länge und Tiefe einzeln bestimmen, jeweils das längste, das
-  sich ohne Kraft hineinlegen lässt. Ergibt das Maß auf ±1 mm.
-. Rahmen einlegen, ohne Segmente: prüft beide Maße gleichzeitig und die
-  hintere Kante.
-. Segmente einstecken (Feder in den Schlitz schieben) und mit dem Radius
-  anfangen, der am ehesten passt. Tauschen, bis die Ecke satt anliegt.
-. Umlaufende Wand: stößt sie irgendwo an, ist dort die nutzbare Höhe kleiner
-  als 12 mm – Stelle notieren.
-. Ergebnis in `boxxy-regal.scad` eintragen (`shelf_x`, `shelf_y`, `corner_r`)
-  und erst dann den eigentlichen Einsatz konstruieren.
+Flach auf dem Bett, Boden unten. Außer der Verrundung unten (siehe nächster
+Abschnitt) gibt es keine Überhänge, Stützen sind nicht nötig.
 
-== Steckverbindung
+Der Einsatz passt auf ein 360er Bett nur **diagonal**, um 45° gedreht:
 
-Die Segmente sitzen mit einer Feder *in der Ebene der Grundplatte* in einem
-Schlitz des Rahmens (Presssitz, `joint_gap = 0,15` mm je Seite). Bewusst kein
-Stufenfalz: der wäre auf einer der beiden Seiten eine 12 mm lange Brücke in der
-Luft und ohne Stützen nicht druckbar.
+[cols="1,1,2"]
+|===
+| Tiefe | Diagonale | Bewertung
 
-Folge: die Verbindung ist in X/Y und gegen Verdrehen fixiert, aber nicht gegen
-Abheben. Der Presssitz hält normalerweise; sonst einen Streifen Tape über die
-Fuge.
+| 77 mm | 351,4 mm | so wurde die Lehre gedruckt, ging
+| 87 mm | 358,5 mm | praktisch zu groß
+|===
+
+45° ist dabei das Optimum – jeder andere Winkel macht die Bounding-Box größer.
+
+WARNING: Für die 87er Variante heißt das: entweder ein größeres Bett, oder das
+Teil muss geteilt werden. Eine Teilung ist bewusst **nicht** eingebaut, weil
+sie beim Einsatz – anders als bei der Lehre – eine Fuge quer durch den Boden
+legt. Sag Bescheid, wenn du sie brauchst.
+
+Kein Brim: bei 351 mm Diagonale ist auf einem 360er Bett kein Platz dafür. Der
+Boden ist groß und dünn, also auf Haftung achten.
+
+== Untere Kante
+
+Die Außenkante ist unten umlaufend mit `bottom_r` = 5 mm verrundet, damit der
+Einsatz über die Hohlkehle am Übergang Boden/Seitenwand des Regals kommt.
+Oberhalb von z = 5 mm ist die Kontur exakt 420 × 77 bzw. 87 – dort liegt der
+Einsatz an, und dort hat auch die Lehre gemessen.
+
+CAUTION: Das ist ein Überhang. Von z = 0 auf z = 0,04 wandert die Kontur
+0,65 mm nach außen; die ersten rund 1 mm drucken ohne Stützen nicht sauber.
+`bottom_steps = 1` macht daraus eine gerade 45°-Fase – stützfrei, gleicher
+Freigang.
+
+Die Verrundung frisst in die Bordwand: erst ab z = 1,75 mm steht mehr als
+0,8 mm davon. Deshalb ist `wall_t` hier 2,0 statt der 1,6 der Lehre – mit 1,6
+bliebe an der Nahtstelle zum Boden eine Schneide von 0,27 mm.
+
+== Historie
+
+Die Passlehre, mit der diese Maße ermittelt wurden – Rahmen, steckbare
+Ecksegmente in mehreren Radien und Teststäbchen für Länge und Tiefe – ist aus
+dem Repo entfernt. Sie liegt in der Git-Historie bis Commit `c7de360`.
