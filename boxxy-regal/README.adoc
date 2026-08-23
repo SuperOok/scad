@@ -74,13 +74,97 @@ Oberhalb von z = 5 mm ist die Kontur exakt 420 × 77 bzw. 87 – dort liegt der
 Einsatz an, und dort hat auch die Lehre gemessen.
 
 CAUTION: Das ist ein Überhang. Von z = 0 auf z = 0,04 wandert die Kontur
-0,65 mm nach außen; die ersten rund 1 mm drucken ohne Stützen nicht sauber.
-`bottom_steps = 1` macht daraus eine gerade 45°-Fase – stützfrei, gleicher
-Freigang.
+0,65 mm nach außen; die ersten rund 1 mm drucken ohne Hilfe nicht sauber. Das
+Mittel dagegen ist ein Brim, siehe unten – kein Stützmaterial.
 
 Die Verrundung frisst in die Bordwand: erst ab z = 1,75 mm steht mehr als
 0,8 mm davon. Deshalb ist `wall_t` hier 2,0 statt der 1,6 der Lehre – mit 1,6
 bliebe an der Nahtstelle zum Boden eine Schneide von 0,27 mm.
+
+=== Keine 45°-Fase statt des Bogens
+
+`bottom_steps = 1` würde aus dem Bogen eine gerade 45°-Fase machen. Das
+**zerlegt das Teil** und ist keine Option:
+
+[cols="1,1,1"]
+|===
+| Flanke | Einzug bei z = 1,6 | Bordwand übrig (von 2,0)
+
+| Bogen (`bottom_steps = 12`) | 1,35 mm | 0,65 mm – hängt zusammen
+| Fase (`bottom_steps = 1`)   | 3,40 mm | −1,40 mm – Wand schwebt
+|===
+
+Eine gerade Flanke ist auf Höhe der Bodenoberkante noch
+`bottom_r − floor_t` = 3,4 mm eingezogen, also mehr als die Wand dick ist.
+CGAL liefert dann zwei getrennte Körper. Ein `assert` im `.scad` fängt das ab.
+
+Reparieren lässt es sich nicht: stützfrei heißt Steigung ≤ 45°, und wer bei
+z = 0 um `bottom_r` eingezogen startet, ist bei z = `floor_t` zwangsläufig noch
+`bottom_r − floor_t` eingezogen. Mit 5 / 1,6 / 2,0 gibt es keine stützfreie
+Unterkante. Der Bogen ist bereits das Optimum – er schmiegt sich exakt an die
+Hohlkehle und nimmt daher am wenigsten Material weg.
+
+== Brim
+
+Empfehlung: **8 mm, nur außen.**
+
+Nicht wegen der Haftung – die erste Schicht ist eine geschlossene Fläche von
+rund 33.000 mm², daran ändert ein Brim nichts Wesentliches. Sondern wegen des
+Überhangs und, bei ASA, wegen des Verzugs.
+
+Die erste Schicht liegt 5 mm innerhalb der Endkontur, dann wandert die Kontur
+sprunghaft nach außen (bei 0,2 mm Schichthöhe):
+
+[cols="1,1,1"]
+|===
+| Schicht | Einzug | Schritt nach außen
+
+| 1 | 5,00 mm | –
+| 2 | 3,60 mm | *1,40 mm*
+| 3 | 3,04 mm | 0,56 mm
+| 4 | 2,63 mm | 0,42 mm
+|===
+
+Schicht 2 wird 1,4 mm weit in die Luft gelegt. Ein Brim gibt ihr eine Auflage.
+Ab Schicht 3 sind die Schritte normal.
+
+Weil die erste Schicht ohnehin 5 mm eingezogen ist, kostet das kaum Bauraum.
+Achtung beim Ausreizen: die **hinteren Ecken sind scharfkantig**, `offset`
+mitert sie diagonal um d·√2 heraus – pro mm Überstand über die Endkontur wächst
+die Bounding-Box um 2,4 mm, nicht um 2:
+
+[cols="1,1,1"]
+|===
+| Überstand über die Endkontur | Bounding-Box (87er) | Rand je Seite
+
+| 0 mm | 346,1 mm | 7,0 mm
+| 3 mm | 353,3 mm | 3,3 mm
+| 5 mm | 358,1 mm | 0,9 mm
+| 7 mm | 363,0 mm | passt nicht
+|===
+
+Der Abriss des Brims sitzt genau auf der verrundeten Fläche, mit der der
+Einsatz in die Hohlkehle greift – dort sauber nacharbeiten, sonst trägt ein
+Grat auf.
+
+== ASA
+
+Bei ASA im Gehäuse gilt zusätzlich:
+
+* Verzug ist das realistische Versagensbild, nicht die Haftung. ASA schwindet
+  das Zwei- bis Dreifache von PLA, und 420 mm sind ein langer Hebel. Die
+  Kammer liegt bei 40–50 °C, ASAs Tg bei ~105 °C – der Spannungsaufbau läuft
+  also trotzdem. Brim nicht weglassen.
+* Der Überhang wird schlechter, weil ASA mit wenig oder ohne Bauteillüfter
+  gedruckt wird. Umso wichtiger, dass Schicht 2 auf dem Brim landet.
+
+WARNING: Schwund trifft direkt die Passung. Ohne Kompensation kommt ASA
+typisch 0,3–0,7 % kleiner heraus – auf 420 mm sind das 1,3 bis 3 mm, während
+die ganze `fit_gap`-Diskussion um 0,6 mm ging. Prüfen, ob im Filamentprofil
+die Schwund-Kompensation (Shrinkage compensation XY) aktiv ist. Wenn die
+Passlehre in PLA gedruckt war und die Kompensation aus ist, muss `fit_gap`
+negativ gesetzt werden – nicht im Slicer skalieren, sonst wandern `corner_r`
+und `wall_h` mit.
 
 == Historie
 
