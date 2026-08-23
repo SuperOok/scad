@@ -41,25 +41,30 @@ deutlich steifer als der offene Rahmen und kann sich nicht wegbiegen – dann
 Flach auf dem Bett, Boden unten. Außer der Verrundung unten (siehe nächster
 Abschnitt) gibt es keine Überhänge, Stützen sind nicht nötig.
 
-Der Einsatz passt auf ein 360er Bett nur **diagonal**, um 45° gedreht:
+Der Einsatz passt auf ein 360er Bett nur **diagonal**, um 45° gedreht. Am
+Modell gemessene Bounding-Box:
 
-[cols="1,1,2"]
+[cols="1,1,1,2"]
 |===
-| Tiefe | Diagonale | Bewertung
+| Tiefe | bei 45° | Rand je Seite | bei 40° / 50°
 
-| 77 mm | 351,4 mm | so wurde die Lehre gedruckt, ging
-| 87 mm | 358,5 mm | praktisch zu groß
+| 77 mm | 339,0 × 339,0 | 10,5 mm | 359,0 – geht gerade noch
+| 87 mm | 346,1 × 346,1 | 7,0 mm  | 365,4 – passt nicht mehr
 |===
 
-45° ist dabei das Optimum – jeder andere Winkel macht die Bounding-Box größer.
+45° ist das Optimum, und der Winkel ist empfindlich – die 87er Variante hat
+schon bei 5° daneben keinen Platz mehr.
 
-WARNING: Für die 87er Variante heißt das: entweder ein größeres Bett, oder das
-Teil muss geteilt werden. Eine Teilung ist bewusst **nicht** eingebaut, weil
-sie beim Einsatz – anders als bei der Lehre – eine Fuge quer durch den Boden
-legt. Sag Bescheid, wenn du sie brauchst.
+IMPORTANT: Nicht `(Länge + Tiefe) / sqrt(2)` rechnen. Das gilt für ein
+scharfkantiges Rechteck; die beiden R30-Ecken ziehen den diagonalen
+Extrempunkt um 30 · (sqrt(2) − 1) = 12,4 mm herein. Mit der Formel kommt man
+12 mm zu groß heraus und hält die 87er fälschlich für unmöglich.
 
-Kein Brim: bei 351 mm Diagonale ist auf einem 360er Bett kein Platz dafür. Der
-Boden ist groß und dünn, also auf Haftung achten.
+Für ein Brim ist damit Platz – 5 mm sind bei beiden Varianten drin. Der Boden
+ist groß und dünn, im Zweifel eins setzen.
+
+Die Diagonalstellung lässt zwei freie Dreiecke an den gegenüberliegenden
+Ecken; da passt der Wipe Tower hin.
 
 == Untere Kante
 

@@ -44,15 +44,17 @@
 //   Flach auf dem Bett, Boden unten. Ausser der Verrundung (siehe oben) gibt
 //   es keine Ueberhaenge, Stuetzen sind nicht noetig.
 //
-//   Der Einsatz passt auf ein 360er Bett nur DIAGONAL, um 45 Grad gedreht:
-//     shelf_y = 77 -> (420 + 77) / sqrt(2) = 351,4 mm   (so gedruckt, ging)
-//     shelf_y = 87 -> (420 + 87) / sqrt(2) = 358,5 mm   (praktisch zu gross)
-//   45 Grad ist dabei das Optimum, jeder andere Winkel wird groesser. Fuer die
-//   87er Variante heisst das: entweder ein groesseres Bett, oder das Teil muss
-//   geteilt werden – das ist hier bewusst nicht eingebaut.
+//   Der Einsatz passt auf ein 360er Bett nur DIAGONAL, um 45 Grad gedreht.
+//   Am Modell gemessene Bounding-Box (nicht (L+B)/sqrt(2) rechnen – die beiden
+//   R30-Ecken ziehen den diagonalen Extrempunkt um 30*(sqrt(2)-1) = 12,4 mm
+//   herein, sonst kommt man 12 mm zu gross heraus):
+//     shelf_y = 77 -> 339,0 x 339,0 mm,  10,5 mm Rand je Seite
+//     shelf_y = 87 -> 346,1 x 346,1 mm,   7,0 mm Rand je Seite
+//   45 Grad ist das Optimum und der Winkel ist empfindlich: bei 40 oder 50
+//   Grad passt die 87er Variante schon nicht mehr (365 mm).
 //
-//   Kein Brim: bei 351 mm Diagonale ist auf einem 360er Bett kein Platz dafuer.
-//   Der Boden ist gross und duenn, also auf Haftung achten.
+//   Fuer ein Brim ist damit Platz (5 mm sind bei beiden drin). Der Boden ist
+//   gross und duenn – im Zweifel eins setzen.
 // =============================================================================
 
 /* [Regalmasse] */
