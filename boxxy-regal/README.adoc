@@ -25,6 +25,38 @@ fehlen – dort werden Segmente eingesteckt. ~35 g.
 `boxxy-regal-corners.3mf`:: Sechs Ecksegmente: Radius 25 / 30 / 35 mm, je links
 und rechts, mit aufgeprägter Radius-Zahl. Zusammen ~20 g.
 
+`boxxy-regal-sticks-x.3mf`:: Fünf Teststäbchen für die **Länge**: 414, 416,
+418, 420, 422 mm, jedes mit seinem Maß beschriftet. ~59 g.
+
+`boxxy-regal-sticks-y.3mf`:: Dieselben fünf Abstufungen für die **Tiefe**: 71,
+73, 75, 77, 79 mm. ~16 g.
+
+Die Abstufungen stehen als `stick_deltas = [-6, -4, -2, 0, 2]` im `.scad`. Wer
+Material sparen will, kürzt die Liste; wer feiner messen will, nimmt 1er
+Schritte.
+
+== Stäbchen
+
+Rahmen und Stäbchen ergänzen sich: der Rahmen sagt „passt / passt nicht", die
+Stäbchen sagen, um wie viel – und sie trennen Länge und Tiefe, die im Rahmen
+zwangsläufig gleichzeitig anliegen.
+
+Jedes Stäbchen ist ein 8 × 2,5 mm Steg mit einem 12 mm hohen Klotz an jedem
+Ende. Gemessen wird mit den beiden äußeren Stirnflächen. Die Klötze sind unten
+außen mit demselben `bottom_r` = 5 mm freigestellt wie der Rahmen: beide Lehren
+tasten die Wand dadurch im selben Höhenband an (ab z = 5 mm) und nicht in einer
+Hohlkehle am Boden – sonst läse das flach liegende Stäbchen zu kurz.
+
+TIP: Nicht drücken. Das längste Stäbchen, das sich ohne Kraft hineinlegen
+lässt, ist die Antwort. Ein 42 cm langer Steg biegt sich unter Druck und
+„passt" dann auch, wenn er zu lang ist.
+
+Auch `sticks-x` muss um 45° gedreht werden (Platte 422 × 56, diagonal 338 mm –
+das passt mit Rand).
+
+NOTE: `export.sh` schreibt ein einziges Objekt mit mehreren Volumina. Zum
+freien Anordnen im Slicer erst „In Objekte aufteilen" / „Split to objects".
+
 == Untere Kante
 
 Die Außenkante ist unten umlaufend mit `bottom_r` = 5 mm verrundet, damit die
@@ -63,13 +95,16 @@ werden Endkappen und der Rahmen schrumpft auf 320 × 77 mm.
 
 [source,bash]
 ----
-./export-boxxy-regal.sh              # beide Teile
+./export-boxxy-regal.sh              # alle Teile
 ./export-boxxy-regal.sh frame        # nur den Rahmen
 ----
 
 == Messen
 
-. Rahmen einlegen, ohne Segmente: prüft Tiefe und die hintere Kante.
+. Stäbchen zuerst: Länge und Tiefe einzeln bestimmen, jeweils das längste, das
+  sich ohne Kraft hineinlegen lässt. Ergibt das Maß auf ±1 mm.
+. Rahmen einlegen, ohne Segmente: prüft beide Maße gleichzeitig und die
+  hintere Kante.
 . Segmente einstecken (Feder in den Schlitz schieben) und mit dem Radius
   anfangen, der am ehesten passt. Tauschen, bis die Ecke satt anliegt.
 . Umlaufende Wand: stößt sie irgendwo an, ist dort die nutzbare Höhe kleiner
