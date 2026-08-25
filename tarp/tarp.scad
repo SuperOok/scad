@@ -98,7 +98,13 @@
 //   mit einem gemeinsamen Untermass von 0.4 mm blieben nur 4.6 mm fuer den
 //   5-mm-Schlitz. Bead- und Halspassung sind deshalb getrennt (bead_fit /
 //   neck_fit), der Hals hat jetzt 0.5 mm mehr Luft im Durchmesser.
-//   Der Bead bleibt bewusst satt – er ist es, der die Last haelt.
+//
+//   PROBEDRUCK 2026-08-23: mit dem freieren Hals faedelt der Fuss ein, aber
+//   der Bead selbst sass stramm und liess sich nur hakelig durch die Schiene
+//   ziehen. bead_fit deshalb 0.4 -> 0.9, Bead 8.6 -> 8.1 mm. Tragend bleibt
+//   er: den Zug nimmt ohnehin der Hals auf (4.1 x 22.4 mm im Querschnitt),
+//   der Bead haelt nur formschluessig und untergreift die Lippen weiterhin
+//   mit 1.55 statt 1.8 mm je Seite.
 //
 //   Zwei Masse waren daneben:
 //     rail_slot_angle 10 -> 25 Grad. Der Schlitz steht deutlich steiler als
@@ -145,11 +151,17 @@ rail_clear     = 15;   // GEMESSEN freie Luft zwischen Schienen-VORDERKANTE und
                        // PROBEDRUCK 2026-08-16: von 5 auf 15 erhoeht – direkt
                        // neben der Kederschiene sitzt ein weiteres Befestigungs-
                        // teil, an dem das Rohr vorbei muss.
-bead_fit       = 0.4;  // Untermass des Beads in der runden Nut
+bead_fit       = 0.9;  // Untermass des Beads in der runden Nut. PROBEDRUCK
+                       // 2026-08-23: mit 0.4 (Bead 8.6) sass er stramm und
+                       // liess sich nur hakelig durch die Schiene ziehen.
+                       // Jetzt 8.1 mm – derselbe Schritt, der beim Hals
+                       // gewirkt hat. Haltend bleibt er trotzdem: die Lippen
+                       // untergreift er noch mit (8.1-5)/2 = 1.55 mm je Seite.
 neck_fit       = 0.9;  // Untermass des Halses im Schlitz. PROBEDRUCK 2026-08-16:
                        // mit 0.4 (= wie der Bead) klemmte der Fuss beim
                        // Einfaedeln; 0.5 mm mehr Luft im Durchmesser reicht.
-                       // Bewusst getrennt vom Bead – der soll satt bleiben.
+                       // Steht getrennt vom Bead, auch wenn beide jetzt
+                       // zufaellig auf 0.9 liegen – sie messen Verschiedenes.
 foot_extra     = 0;    // Fusslaenge = Huelsenbreite + 2*foot_extra (s. Abgeleitet).
                        // Kurz halten! Die vorhandene Schiene ist am Anfang
                        // gebogen, ein langes gerades Keder-Stueck haengt fest.
