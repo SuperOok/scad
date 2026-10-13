@@ -1,0 +1,46 @@
+= Der Haken
+:toc:
+:toc-title: Inhalt
+:icons: font
+
+== Was ist das?
+
+Ein breiter Zughaken: Der lange Schenkel hat nahe der Spitze einen Schlitz,
+durch den ein Nylon-Gurt zum Ziehen geschoben wird. Der kurze Schenkel ist
+leicht nach aussen gestellt, sodass sich das Hakenmaul vom Scheitel zur Spitze
+oeffnet. Beide Enden sind halbrund, alle Kanten verrundet.
+
+== Auf einen Blick
+
+[cols="1,3", frame=none, grid=rows]
+|===
+| Breite            | 60 mm (`hook_width`)
+| Langer Schenkel   | 150 mm aussen (`long_len`), mit Gurtschlitz
+| Kurzer Schenkel   | 70 mm aussen (`short_len`), ~18° nach aussen gekippt
+| Hakenmaul         | 20 mm im Scheitel (`hook_gap`) -> 35 mm an der Spitze
+                      (`hook_mouth`); der Kippwinkel wird daraus berechnet
+| Materialstaerke   | 10 mm (`wall`)
+| Gurtschlitz       | 28 × 5 mm fuer 25-mm-Gurt (`strap_w`, `slot_h`),
+                      Mitte 22 mm unter der Spitze (`slot_from_tip`)
+| Kanten            | R2 rundum (`edge_r`), auch im Schlitz
+|===
+
+Alle Parameter stehen oben in `haken.scad`.
+
+== Druck
+
+* So drucken, wie modelliert: *auf der Seite liegend*, Profil in der
+  Schichtebene, 60 mm Druckhoehe. Damit laeuft der Zug durch die Biegung
+  entlang der Bahnen statt ueber Schichtgrenzen.
+* Stuetzfrei. Der Schlitz ist in jeder Schicht ein Durchbruch, oben und unten
+  nur eine 5-mm-Bruecke.
+* ASA, >= 4 Perimeter, >= 40 % Infill.
+
+== Export
+
+[source,bash]
+----
+./export.sh haken/haken.scad
+----
+
+Renderzeit ~1 min (Minkowski-Verrundung).
