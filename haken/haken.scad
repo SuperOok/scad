@@ -36,6 +36,8 @@ slot_from_tip  = 22;  // Schlitzmitte -> Spitze des langen Schenkels
 
 // ---- Verrundung -------------------------------------------------------------
 edge_r   = 1.2;  // Kantenradius aller Kanten (Minkowski-Kugel)
+tip_r    = hook_width / 2;  // Rundung der kurzen Spitze in der Breite
+tip_bed_chamfer = false;    // true: zur Bettseite 45-Grad-Flanke statt Bogen
 
 $fn = 96;
 sphere_fn = 16;  // Facetten der Minkowski-Kugel (Renderzeit!)
@@ -75,6 +77,10 @@ assert(slot_from_tip - slot_h / 2 >= 12,
        str("Steg zwischen Schlitz und Spitze nur ",
            slot_from_tip - slot_h / 2, " mm"));
 assert(edge_r < wall / 2 && edge_r < hook_width / 2, "edge_r zu gross");
+assert(tip_r <= hook_width / 2, "tip_r muss <= hook_width/2 sein");
+assert(norm(short_tip - short_base) > tip_r + 5,
+       str("kurzer Schenkel (", norm(short_tip - short_base),
+           " mm) zu kurz fuer tip_r ", tip_r));
 
 // ---- 2D-Profil --------------------------------------------------------------
 module leg(a, b) {
@@ -116,6 +122,35 @@ module slot_cut(grow) {
         cube([wall + 2, slot_h + 2 * grow, slot_len + 2 * grow], center = true);
 }
 
+// Spitze des kurzen Schenkels in der Breite halbrund (Radius tip_r).
+// Achtung Druck: zur Bettseite (Z = 0) laeuft der Bogen fast waagerecht aus,
+// die untersten ~9 mm sind steiler als 45 Grad ueberhaengend. Mit
+// tip_bed_chamfer = true geht der Bogen dort in eine 45-Grad-Flanke ueber.
+// 2D-Koordinaten: x = entlang des Schenkels (0 = Mitte der Endrundung),
+// y = Z (Hakenbreite). Alles fuer den um edge_r geschrumpften Kern.
+module tip_keep_2d() {
+    rc = tip_r - edge_r;
+    u0 = wall / 2 - tip_r;                      // Kreismitte entlang Schenkel
+    hull() {
+        translate([u0, hook_width / 2]) circle(r = rc);
+        if (tip_bed_chamfer)
+            translate([u0 - rc, edge_r])
+                square([rc + rc * (sqrt(2) - 1), 0.01]);
+    }
+    translate([u0 - long_len, -1]) square([long_len, hook_width + 2]);
+}
+
+module tip_cut() {
+    // lokales Schenkel-System: Y entlang des Schenkels, X durch die Wand
+    translate(short_tip) rotate([0, 0, -short_tilt])
+        difference() {
+            translate([-wall, wall / 2 - tip_r, -1])
+                cube([2 * wall, tip_r + wall, hook_width + 2]);
+            rotate([90, 0, 90]) translate([0, 0, -wall])
+                linear_extrude(height = 2 * wall) tip_keep_2d();
+        }
+}
+
 module body_core() {
     // um edge_r geschrumpfter Kern; die Minkowski-Kugel bringt ihn auf Mass
     difference() {
@@ -123,6 +158,7 @@ module body_core() {
             linear_extrude(height = hook_width - 2 * edge_r)
                 offset(r = -edge_r) profile();
         slot_cut(edge_r);
+        tip_cut();
     }
 }
 

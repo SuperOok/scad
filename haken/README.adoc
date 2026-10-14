@@ -22,6 +22,8 @@ oeffnet. Beide Enden sind halbrund, alle Kanten verrundet.
 | Materialstaerke   | 3 mm (`wall`), Probedruck zur Dickenfindung
 | Gurtschlitz       | 28 × 5 mm fuer 25-mm-Gurt (`strap_w`, `slot_h`),
                       Mitte 22 mm unter der Spitze (`slot_from_tip`)
+| Kurze Spitze      | in der Breite halbrund, R30 (`tip_r`); optional zur
+                      Bettseite 45-Grad-Flanke (`tip_bed_chamfer`)
 | Kanten            | R1,2 rundum (`edge_r`, muss < wall/2 sein), auch im Schlitz
 |===
 
@@ -32,8 +34,11 @@ Alle Parameter stehen oben in `haken.scad`.
 * So drucken, wie modelliert: *auf der Seite liegend*, Profil in der
   Schichtebene, 60 mm Druckhoehe. Damit laeuft der Zug durch die Biegung
   entlang der Bahnen statt ueber Schichtgrenzen.
-* Stuetzfrei. Der Schlitz ist in jeder Schicht ein Durchbruch, oben und unten
-  nur eine 5-mm-Bruecke.
+* Der Schlitz ist in jeder Schicht ein Durchbruch, oben und unten nur eine
+  5-mm-Bruecke.
+* Einziger Ueberhang: die halbrunde kurze Spitze auf den untersten ~9 mm
+  (steiler als 45 Grad). Falls sie dort haengt: `tip_bed_chamfer = true`
+  oder Stuetzen nur an der Spitze.
 * ASA, >= 4 Perimeter, >= 40 % Infill.
 
 == Export
