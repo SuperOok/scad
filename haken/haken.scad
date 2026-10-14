@@ -23,7 +23,7 @@
 hook_width  = 60;    // Breite des Hakens (Z, = Druckhoehe)
 long_len    = 150;   // langer Schenkel, Aussenmass Biegung unten -> Spitze
 short_len   = 70;    // kurzer Schenkel, Aussenmass Biegung unten -> Spitze
-wall        = 10;    // Materialstaerke von Schenkeln und Biegung
+wall        = 3;     // Materialstaerke von Schenkeln und Biegung
 hook_gap    = 20;    // lichte Weite im Scheitel (Innenrundung)
 hook_mouth  = 35;    // lichte Weite an der Spitze des kurzen Schenkels
 
@@ -35,7 +35,7 @@ slot_h         = 5;   // Schlitzhoehe entlang des Schenkels (Gurtdicke + Luft)
 slot_from_tip  = 22;  // Schlitzmitte -> Spitze des langen Schenkels
 
 // ---- Verrundung -------------------------------------------------------------
-edge_r   = 2;    // Kantenradius aller Kanten (Minkowski-Kugel)
+edge_r   = 1.2;  // Kantenradius aller Kanten (Minkowski-Kugel)
 
 $fn = 96;
 sphere_fn = 16;  // Facetten der Minkowski-Kugel (Renderzeit!)

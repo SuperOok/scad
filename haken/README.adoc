@@ -16,13 +16,13 @@ oeffnet. Beide Enden sind halbrund, alle Kanten verrundet.
 |===
 | Breite            | 60 mm (`hook_width`)
 | Langer Schenkel   | 150 mm aussen (`long_len`), mit Gurtschlitz
-| Kurzer Schenkel   | 70 mm aussen (`short_len`), ~18° nach aussen gekippt
+| Kurzer Schenkel   | 70 mm aussen (`short_len`), ~15° nach aussen gekippt
 | Hakenmaul         | 20 mm im Scheitel (`hook_gap`) -> 35 mm an der Spitze
                       (`hook_mouth`); der Kippwinkel wird daraus berechnet
-| Materialstaerke   | 10 mm (`wall`)
+| Materialstaerke   | 3 mm (`wall`), Probedruck zur Dickenfindung
 | Gurtschlitz       | 28 × 5 mm fuer 25-mm-Gurt (`strap_w`, `slot_h`),
                       Mitte 22 mm unter der Spitze (`slot_from_tip`)
-| Kanten            | R2 rundum (`edge_r`), auch im Schlitz
+| Kanten            | R1,2 rundum (`edge_r`, muss < wall/2 sein), auch im Schlitz
 |===
 
 Alle Parameter stehen oben in `haken.scad`.
