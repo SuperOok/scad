@@ -4,7 +4,8 @@
 // Ein breiter U-/J-Haken: langer Schenkel mit Schlitz fuer einen Nylon-Gurt
 // (zum Ziehen), kurzer Schenkel leicht nach aussen gestellt, sodass sich das
 // Hakenmaul vom Scheitel (hook_gap) zur Spitze (hook_mouth) oeffnet.
-// Beide Schenkelenden halbrund, alle Kanten mit edge_r verrundet.
+// Beide Schenkelenden halbrund, kurze Spitze in der Breite halbrund, Ecken
+// der langen Spitze mit long_corner_r verrundet, alle Kanten mit edge_r.
 //
 // Koordinaten (Profil):
 //   X = quer zu den Schenkeln (langer Schenkel bei -X)
@@ -38,6 +39,7 @@ slot_from_tip  = 22;  // Schlitzmitte -> Spitze des langen Schenkels
 edge_r   = 1.2;  // Kantenradius aller Kanten (Minkowski-Kugel)
 tip_r    = hook_width / 2;  // Rundung der kurzen Spitze in der Breite
 tip_bed_chamfer = false;    // true: zur Bettseite 45-Grad-Flanke statt Bogen
+long_corner_r = 10;  // Eckenradius der langen Spitze in der Breite
 
 $fn = 96;
 sphere_fn = 16;  // Facetten der Minkowski-Kugel (Renderzeit!)
@@ -78,6 +80,11 @@ assert(slot_from_tip - slot_h / 2 >= 12,
            slot_from_tip - slot_h / 2, " mm"));
 assert(edge_r < wall / 2 && edge_r < hook_width / 2, "edge_r zu gross");
 assert(tip_r <= hook_width / 2, "tip_r muss <= hook_width/2 sein");
+assert(long_corner_r > edge_r && long_corner_r <= hook_width / 2,
+       "long_corner_r muss zwischen edge_r und hook_width/2 liegen");
+assert(slot_from_tip - slot_h / 2 >= long_corner_r
+       || hook_width / 2 - slot_len / 2 >= long_corner_r,
+       "long_corner_r ragt in den Gurtschlitz");
 assert(norm(short_tip - short_base) > tip_r + 5,
        str("kurzer Schenkel (", norm(short_tip - short_base),
            " mm) zu kurz fuer tip_r ", tip_r));
@@ -140,14 +147,27 @@ module tip_keep_2d() {
     translate([u0 - long_len, -1]) square([long_len, hook_width + 2]);
 }
 
-module tip_cut() {
+// Ecken der langen Spitze in der Breite mit long_corner_r verrundet,
+// gleiches 2D-System wie tip_keep_2d.
+module long_tip_keep_2d() {
+    rc = long_corner_r - edge_r;
+    u0 = wall / 2 - long_corner_r;
+    hull()
+        for (z = [long_corner_r, hook_width - long_corner_r])
+            translate([u0, z]) circle(r = rc);
+    translate([u0 - long_len, -1]) square([long_len, hook_width + 2]);
+}
+
+// Schneidet die Spitze eines Schenkels (Mitte der Endrundung pos, Schenkel um
+// ang gegen +Y gedreht) auf die Kontur children() zu; len = betroffene Laenge.
+module leg_tip_cut(pos, ang, len) {
     // lokales Schenkel-System: Y entlang des Schenkels, X durch die Wand
-    translate(short_tip) rotate([0, 0, -short_tilt])
+    translate(pos) rotate([0, 0, ang])
         difference() {
-            translate([-wall, wall / 2 - tip_r, -1])
-                cube([2 * wall, tip_r + wall, hook_width + 2]);
+            translate([-wall, wall / 2 - len, -1])
+                cube([2 * wall, len + wall, hook_width + 2]);
             rotate([90, 0, 90]) translate([0, 0, -wall])
-                linear_extrude(height = 2 * wall) tip_keep_2d();
+                linear_extrude(height = 2 * wall) children();
         }
 }
 
@@ -158,7 +178,9 @@ module body_core() {
             linear_extrude(height = hook_width - 2 * edge_r)
                 offset(r = -edge_r) profile();
         slot_cut(edge_r);
-        tip_cut();
+        leg_tip_cut(short_tip, -short_tilt, tip_r) tip_keep_2d();
+        leg_tip_cut([long_cx, long_tip_y], 0, long_corner_r)
+            long_tip_keep_2d();
     }
 }
 

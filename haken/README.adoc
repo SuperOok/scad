@@ -8,7 +8,8 @@
 Ein breiter Zughaken: Der lange Schenkel hat nahe der Spitze einen Schlitz,
 durch den ein Nylon-Gurt zum Ziehen geschoben wird. Der kurze Schenkel ist
 leicht nach aussen gestellt, sodass sich das Hakenmaul vom Scheitel zur Spitze
-oeffnet. Beide Enden sind halbrund, alle Kanten verrundet.
+oeffnet. Beide Enden sind halbrund, die Ecken der langen Spitze mit R10
+verrundet, alle Kanten verrundet.
 
 == Auf einen Blick
 
@@ -24,6 +25,8 @@ oeffnet. Beide Enden sind halbrund, alle Kanten verrundet.
                       Mitte 22 mm unter der Spitze (`slot_from_tip`)
 | Kurze Spitze      | in der Breite halbrund, R30 (`tip_r`); optional zur
                       Bettseite 45-Grad-Flanke (`tip_bed_chamfer`)
+| Lange Spitze      | Ecken in der Breite R10 (`long_corner_r`), damit sie
+                      sich beim Herunterziehen nicht im Neopren verfangen
 | Kanten            | R1,2 rundum (`edge_r`, muss < wall/2 sein), auch im Schlitz
 |===
 
