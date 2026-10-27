@@ -1,30 +1,26 @@
 // =============================================================================
-// windowblock – Zugstrebe gegen das Zuschlagen eines gekippten Fensters
+// windowblock – Buegel gegen das Zuschlagen eines gekippten Fensters
 // =============================================================================
-// Eine zur Laibung hin offene Gabel wird waagerecht von links auf den geraden
-// Teil des (in Kippstellung hochgestellten) Fenstergriffs geschoben. Die
-// Strebe laeuft durch die Laibung zur Zimmerwand und hakt um die
-// Laibungskante; die Auflage liegt flach auf der Zimmerwand. Will der Fluegel
-// zufallen, wandert der Griff nach aussen, die Strebe kommt auf Zug und zieht
-// die Auflage gegen die Wand.
+// Ein flacher Buegel liegt waagerecht hinter dem (in Kippstellung
+// hochgestellten) Fenstergriff und stuetzt sich an drei Stellen ab:
+//   - Fuss:  auf dem Fluegelrahmen links neben dem Griff   (drueckt zum Zimmer)
+//   - Wiege: an der Rueckseite des Griffs                  (drueckt zum Fenster)
+//   - Feder: flach auf der Zimmerwand neben der Laibung    (drueckt zum Zimmer)
+// Das ist ein Dreipunkt-Biegebalken: Fuss und Feder halten, die Wiege wird
+// vom Griff belastet. Will der Fluegel zufallen, drueckt der Griff gegen die
+// Wiege, der Buegel stemmt sich ueber die Feder gegen die Wand.
 //
-// Warum eine Gabel statt einer Oese: Die Hebelspitze ist zum Fluegel hin
-// gebogen. Eine von oben aufgesteckte Oese braucht dafuer viel Spiel, und mit
-// Spiel dreht das Teil weg. Die Gabel umgeht die Biegung und sitzt knapp.
-//   - Die Gabel ist fork_h hoch und folgt der Hebelneigung -> kein Abkippen.
-//   - Ein Fuss links neben dem Hebel stuetzt sich auf dem Fluegelrahmen ab
-//     -> kein waagerechtes Wegschwenken von der Laibung. In die andere
-//     Richtung haelt der Laibungsschenkel.
-//   - Unter Zug zieht die Strebe Richtung Laibungsecke (+X, +Y): Der Hebel
-//     wird tiefer in die Gabel und gegen die Rueckwand gedrueckt. Zwei kleine
-//     Rastnoppen an der Oeffnung halten die Gabel ohne Last.
+// Warum eine Feder: Die Vorgaenger (Oese, Gabel) hatten Spiel an Griff,
+// Rahmen und Wand, weil drei Kontakte mit Messtoleranz nie gleichzeitig
+// anliegen. Hier ist die Blattfeder an der Wand ungespannt um `preload` zu
+// lang. Eingebaut drueckt sie alle drei Kontakte an -> kein Spiel, und
+// Messfehler bis +-leaf_gap / preload werden ausgeglichen. Bei einer Boee
+// federt der Buegel hoechstens `leaf_gap` ein, dann liegt die Federwurzel
+// starr an der Wand.
 //
-// EINBAU: Teil ~25 mm links der Endlage ansetzen, Auflage schon vor der
-// Zimmerwand, dann nach rechts auf den Hebel schieben, bis der Schenkel an der
-// Laibung anliegt.
-//
-// Die Strebe ist um `slack` laenger als der Abstand bei voll gekipptem
-// Fluegel: Sie haengt also nur lose, bis der Fluegel ein paar mm zufaellt.
+// EINBAU: Wiege hinter den Griff schieben, Fuss auf den Fluegelrahmen.
+// Dann das Wandende um die Laibungskante schwenken und die Feder flach auf die
+// Wand druecken. AUSBAU: Wandende zum Zimmer ziehen.
 //
 // Koordinaten (Draufsicht, Griff rechts am Fluegel):
 //   X = parallel zum Fenster, +X Richtung rechte Laibung
@@ -32,80 +28,76 @@
 //   Z = senkrecht nach oben (Einbaulage = Drucklage)
 //   Mitte des Griffhebels liegt bei Z = 0 bei (0, 0).
 //
-// DRUCK: flach liegend wie modelliert, Z = 0 aufs Bett. Die Zugkraft laeuft
-// in der Schichtebene, Gabel und Fuss sind um lever_tilt (< 5 Grad) geneigt.
-// Stuetzfrei. ASA, >= 4 Perimeter, >= 40 % Infill.
+// DRUCK: flach liegend wie modelliert, Z = 0 aufs Bett. Die Feder biegt sich
+// in der Schichtebene. Stuetzfrei. ASA, >= 4 Perimeter, >= 40 % Infill.
 // Bettseite gehoert beim Einbau nach unten, sonst stimmt die Neigung nicht.
 // =============================================================================
 
-// ---- Messwerte (am Fenster gemessen 2026-10-19) -----------------------------
-lever_w   = 21;    // Breite Griffhebel (X), gerader Teil, Schieblehre
-lever_t   = 13.5;  // Dicke Griffhebel (Y), gerader Teil, Schieblehre
-lever_len = 100;   // Hebellaenge Drehachse -> Spitze
-lever_straight = 70;  // gerader Teil zwischen Halsrundung und Spitzenbiegung
-lever_gap = 35;    // Abstand Rueckseite Hebel -> Fluegelflaeche
-gap_reveal = 55;   // Laibung -> laibungsseitige Flanke des Hebels
-frame_left = 25;   // Fluegelrahmen links neben dem Hebel (ab Hebelflanke)
-rosette_w  = lever_w + 2;  // Rosette am Hebelfuss, je Seite 1 mm breiter
-// Vorderseite Hebel -> Ebene der Zimmerwand, Fluegel voll gekippt. Der Hebel
+// ---- Messwerte (am Fenster gemessen 2026-10-27, Fluegel voll gekippt) ------
+// Hoehen Z ab Austritt des Hebels aus der Rosette (~ Drehpunkt), entlang des
+// Hebels. Alle Masse auf Hoehe H = 35 mm, wo der Buegel sitzt.
+lever_w   = 29.5;  // Breite Griffhebel (X), Schieblehre
+lever_t   = 14;    // Dicke Griffhebel (Y), Rueckseite flach
+lever_straight = 70;  // gerader Teil (bis hier gemessen)
+lever_gap = 41;    // Rueckseite Hebel -> Fluegelflaeche
+gap_reveal = 56;   // laibungsseitige Flanke des Hebels -> Laibung
+frame_left = 27;   // ebener Fluegelrahmen links neben dem Hebel (ab Flanke)
+rosette_top = 32.5;  // Rosette 65 hoch, mittig um den Drehpunkt
+// Rueckseite Hebel -> Ebene der Zimmerwand (Lineal auf der Wand). Der Hebel
 // steht in Kippstellung schraeg (oben naeher am Zimmer).
-wall_top  = 90;    // an der Hebelspitze
-wall_bot  = 98;    // am Hebelfuss
+wall_a = 105;  wall_a_z = 35;
+wall_b = 103;  wall_b_z = 70;
 
-// ---- Lage der Gabel ---------------------------------------------------------
-fork_z = 35;  // Hoehe der Strebe (Unterkante Gabel) ueber dem Hebelfuss
+// ---- Lage des Buegels -------------------------------------------------------
+bar_z = 35;  // Hoehe der Buegelunterkante (H)
 
-// Wandabstand dort, wo die Strebe sitzt (linear zwischen Fuss und Spitze)
+// Wandabstand dort, wo der Buegel sitzt (linear ueber die Hebelhoehe)
+lever_tilt = atan((wall_a - wall_b) / (wall_b_z - wall_a_z));  // gegen Z
 x_dist     = gap_reveal + lever_w / 2;   // Mitte Hebel -> Laibung
-y_dist     = wall_bot - (wall_bot - wall_top) * fork_z / lever_len
-             + lever_t / 2;              // Mitte Hebel -> Zimmerwand
-lever_tilt = atan((wall_bot - wall_top) / lever_len);  // Neigung gegen Z
+y_dist     = wall_a - (bar_z - wall_a_z) * tan(lever_tilt)
+             - lever_t / 2;              // Mitte Hebel -> Zimmerwand
+
+// ---- Feder ------------------------------------------------------------------
+preload  = 4;   // Federspitze ragt ungespannt so weit hinter die Wandflaeche
+leaf_gap = 4;   // Luft Federwurzel -> Wand, eingebaut (= Federweg bis Block)
+leaf_t   = 3.5; // Dicke der Blattfeder
+leaf_len = 55;  // freie Laenge der Blattfeder
 
 // ---- Passung ----------------------------------------------------------------
-fork_clear = 0.5;  // Spiel der Gabel je Seite um den Hebel
-snap       = 0.4;  // Ueberdeckung je Rastnoppen (0 = ohne Rastung)
-slack      = 2;    // Strebe so viel laenger als y_dist (Einhaengen, Messfehler)
-x_clear    = 0.5;  // Luft zwischen Schenkel und Laibung
-foot_clear = 0.3;  // Luft zwischen Fuss und Fluegelrahmen
+rib      = 1;    // Rippen neben dem Hebel ragen so weit vor die Rueckseite
+rib_clear = 0.5; // Luft zwischen Rippe und Hebelflanke
+x_clear  = 3;    // Luft Laibungsschenkel -> Laibung (fuehrt nur, traegt nicht)
 
 // ---- Form -------------------------------------------------------------------
-height     = 20;  // Hoehe von Strebe, Schenkel und Auflage
-fork_h     = 40;  // Hoehe von Gabel und Fuss (gegen Abkippen)
-wall       = 6;   // Wandstaerke Gabel, Laibungsschenkel, Auflage
-strut_w    = 8;   // Breite der Strebe
-fork_back  = min(wall, lever_gap - 1);  // Gabelwand zwischen Hebel und Fluegel
-nub_r      = 2;   // Radius der Rastnoppen
-foot_w     = 8;   // Durchmesser der runden Fussspitze
-foot_root  = 4;   // Fussansatz: aeusserer Streifen der linken Gabelwand
-leg_len    = 40;  // Schenkel entlang der Laibung (ab Kante)
-pad_len    = 35;  // Auflage auf der Zimmerwand (ab Kante)
-relief_r   = 3;   // Freisparung an der Innenecke: Kante traegt nicht
-round_r    = 1.5; // Verrundung der Profilecken
+height   = 20;  // Hoehe des Buegels
+arm_w    = 10;  // Breite von Wiege und Arm
+wall     = 6;   // Wandstaerke Laibungsschenkel
+root_len = 12;  // Federwurzel entlang der Wand ab Schenkelaussenseite
+root_t   = 6;   // Dicke der Federwurzel
+foot_w   = 8;   // Durchmesser der runden Fussspitze
+leg_len  = 25;  // Schenkel entlang der Laibung (ab Wandflaeche)
+rib_r    = 2;   // Radius der Rippen
+round_r  = 1.5; // Verrundung der Profilecken
 
 show_context = false;  // true: Fluegel, Griff und Wand als Geister anzeigen
 
 $fn = 64;
 
 // ---- abgeleitete Werte ------------------------------------------------------
-slot_y   = lever_t + 2 * fork_clear;          // lichte Weite der Gabel (Y)
-in_left  = -lever_w / 2 - fork_clear;         // Innenflaeche linke Gabelwand
-nub_x    = lever_w / 2 + fork_clear + nub_r;  // Noppen knapp hinter der Flanke
-arm_end  = nub_x + nub_r + 0.5;               // Ende der Gabelarme (+X)
-fork_l   = in_left - wall;                    // Aussenkante links
-fork_top = slot_y / 2 + wall;                 // Vorderkante Gabel (+Y)
-fork_bot = -slot_y / 2 - fork_back;           // Rueckkante Gabel (-Y)
-x_rev    = x_dist - x_clear;          // Aussenflaeche Schenkel (an Laibung)
-y_wall   = y_dist + slack;            // Innenflaeche Auflage (an Zimmerwand)
-leg_y0   = y_wall - leg_len;          // unteres Schenkelende
-y_frame  = -lever_t / 2 - lever_gap;  // Flaeche Fluegelrahmen
-foot_x   = -lever_w / 2 - frame_left / 2;  // Fuss mittig auf dem Rahmenstreifen
-foot_y   = y_frame + foot_clear + foot_w / 2;  // Mitte der Fussspitze
+y_back  = -lever_t / 2;                       // Rueckseite Hebel (Wiege)
+y_frame = y_back - lever_gap;                 // Flaeche Fluegelrahmen
+rib_x   = lever_w / 2 + rib_clear + rib_r;    // Mitte der Rippen
+cr_x    = rib_x + rib_r;                      // halbe Laenge der Wiege
+foot_x  = -lever_w / 2 - frame_left / 2;      // Fuss mittig auf dem Rahmenstreifen
+foot_y  = y_frame + foot_w / 2;               // Mitte der Fussspitze
+x_rev   = x_dist - x_clear;                   // Aussenflaeche Schenkel
+root_y  = y_dist + leaf_gap;                  // Innenflaeche Federwurzel
+leaf_x0 = x_rev + root_len;                   // Federansatz
+lean_dy = height * tan(lever_tilt);           // Versatz der Wiege oben
 
-assert(lever_gap > 2, "lever_gap zu klein fuer eine Gabelwand");
-assert(x_rev - wall > arm_end, "x_dist zu klein: Gabel und Schenkel ueberlappen");
-assert(foot_x + foot_w / 2 < -rosette_w / 2 - 1,
-       "Fuss trifft die Rosette: frame_left zu klein");
-assert(fork_h <= lever_straight - 10, "Gabel hoeher als der gerade Hebelteil");
+assert(bar_z > rosette_top, "Buegel auf Hoehe der Rosette");
+assert(x_rev - wall > cr_x + arm_w, "x_dist zu klein fuer den Arm");
+assert(bar_z + height <= lever_straight, "Buegel hoeher als der gerade Hebelteil");
 
 // ---- Hilfen -----------------------------------------------------------------
 module bar(p0, p1, w) {
@@ -127,67 +119,71 @@ module lean() {
 }
 
 // ---- 2D-Profile -------------------------------------------------------------
-// Gabel (zur Laibung hin offen) mit Fuss zum Fluegelrahmen
-module fork_profile() {
-    difference() {
-        rounded(round_r) union() {
-            translate([fork_l, fork_bot])
-                square([arm_end - fork_l, fork_top - fork_bot]);
-            hull() {
-                translate([fork_l, fork_bot]) square([foot_root, fork_back]);
-                translate([foot_x, foot_y]) circle(d = foot_w);
-            }
+// Wiege hinter dem Hebel, Fuss zum Fluegelrahmen (beide folgen der Neigung)
+module cradle_profile() {
+    rounded(round_r) union() {
+        translate([-cr_x, y_back - arm_w]) square([2 * cr_x, arm_w]);
+        hull() {
+            translate([-cr_x, y_back - arm_w]) square([3, arm_w]);
+            translate([foot_x, foot_y]) circle(d = foot_w);
         }
-        // Schlitz, links mit gerundeten Innenecken, rechts offen
-        translate([in_left, -slot_y / 2])
-            rounded(2) square([arm_end - in_left + 5, slot_y]);
     }
-    // Rastnoppen: ragen je `snap` in den Schlitz
-    if (snap > 0)
-        for (s = [-1, 1])
-            intersection() {
-                translate([nub_x, s * (slot_y / 2 + nub_r - snap)])
-                    circle(r = nub_r);
-                translate([fork_l, fork_bot])
-                    square([arm_end - fork_l, fork_top - fork_bot]);
-            }
+    // Rippen links und rechts neben dem Hebel
+    for (s = [-1, 1])
+        intersection() {
+            translate([s * rib_x, y_back + rib - rib_r]) circle(r = rib_r);
+            translate([-cr_x, y_back - arm_w]) square([2 * cr_x, arm_w + rib]);
+        }
 }
 
-// Strebe, Laibungsschenkel und Auflage auf der Zimmerwand
+// Arm, Laibungsschenkel, Federwurzel (starr)
 module arm_profile() {
-    difference() {
-        rounded(round_r) union() {
-            // Strebe: vorderer Gabelarm -> unteres Ende des Laibungsschenkels.
-            // Die Strebe steht senkrecht, die Gabel ist geneigt: Ansatz um die
-            // Neigung ueber `height` nach vorn, sonst ragt sie oben in den
-            // Schlitz.
-            bar([arm_end - strut_w / 2,
-                 slot_y / 2 + strut_w / 2 + height * tan(lever_tilt)],
-                [x_rev - strut_w / 2, leg_y0 + strut_w / 2], strut_w);
-            // Schenkel entlang der Laibung, bis ueber die Kante
-            translate([x_rev - wall, leg_y0]) square([wall, leg_len + wall]);
-            // Auflage auf der Zimmerwand
-            translate([x_rev - wall, y_wall]) square([wall + pad_len, wall]);
-        }
-        // Freisparung: Innenecke beruehrt die Putzkante nicht
-        translate([x_rev, y_wall]) circle(r = relief_r);
+    rounded(round_r) union() {
+        // Arm: rechtes Wiegenende -> unteres Schenkelende. Der Ansatz liegt
+        // rechts der Rippe und um die Neigung ueber `height` vorn, sonst
+        // ragt er oben in den Hebel.
+        bar([cr_x + arm_w / 2 - rib_r, y_back - arm_w / 2 + lean_dy],
+            [x_rev - wall / 2, y_dist - leg_len + wall / 2], arm_w);
+        // Schenkel entlang der Laibung, bis ueber die Wandflaeche
+        translate([x_rev - wall, y_dist - leg_len])
+            square([wall, leg_len + leaf_gap + root_t]);
+        // Federwurzel entlang der Wand
+        translate([x_rev - wall, root_y])
+            square([wall + root_len + leaf_t, root_t]);
     }
+}
+
+// Blattfeder: ungespannt schraeg, Spitze `preload` hinter der Wandflaeche
+module leaf_profile() {
+    bar([leaf_x0, root_y + leaf_t / 2],
+        [leaf_x0 + leaf_len, y_dist - preload + leaf_t / 2], leaf_t);
 }
 
 // ---- Teil -------------------------------------------------------------------
-lean() linear_extrude(height = fork_h) fork_profile();
-linear_extrude(height = height) arm_profile();
+module part() {
+    lean() linear_extrude(height = height) cradle_profile();
+    linear_extrude(height = height) {
+        arm_profile();
+        leaf_profile();
+    }
+}
 
 // ---- Kontext (nur Ansicht) --------------------------------------------------
+module context_lever() {
+    lean() translate([-lever_w / 2, -lever_t / 2, -bar_z])
+        cube([lever_w, lever_t, lever_straight + 30]);
+}
+module context_frame() {
+    lean() translate([-150, y_frame - 70, -bar_z])
+        cube([150 + x_dist - 15, 70, lever_straight + 30]);
+}
+module context_wall() {
+    translate([x_dist, y_dist - 220, -bar_z]) cube([120, 220, lever_straight + 30]);
+}
+
+part();
 if (show_context) %union() {
-    lean() {
-        // Griffhebel (gerader Teil)
-        translate([-lever_w / 2, -lever_t / 2, -fork_z])
-            cube([lever_w, lever_t, lever_len]);
-        // Fluegelrahmen
-        translate([-150, y_frame - 70, -fork_z])
-            cube([150 + x_dist - 15, 70, lever_len]);
-    }
-    // Laibung + Zimmerwand
-    translate([x_dist, y_dist - 220, -fork_z]) cube([120, 220, lever_len]);
+    context_lever();
+    context_frame();
+    context_wall();
 }
